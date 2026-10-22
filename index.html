@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portale Segnalazioni e Report - Stazione Appaltante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .password-field { position: relative; width: 100%; min-width: 0; }
+        .password-field > input { padding-right: 3.25rem !important; }
+        .password-toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center; justify-content: center; width: 40px; height: 32px;
+            padding: 0; border: 0; border-radius: 6px; background: transparent; color: #64748b; cursor: pointer; }
+        .password-toggle:hover { color: #4338ca; background: #eef2ff; }
+        .password-toggle:focus-visible { outline: 2px solid #4f46e5; outline-offset: 1px; }
+        .password-toggle svg { width: 20px; height: 20px; pointer-events: none; }
+        .password-toggle .password-eye-slash { display: none; }
+        .password-toggle[aria-pressed="true"] .password-eye-slash { display: block; }
+        .password-field > input::-ms-reveal { display: none; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+    <!-- SCHERMATA DI ACCESSO S.A. -->
+    <div id="schermata-login" class="min-h-[calc(100vh-89px)] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-xl shadow-md border border-slate-200 max-w-md w-full">
+            <div class="flex justify-center bg-white-800 rounded-lg p-4 mb-6">
+    <img
+        src="https://i.ibb.co/JWJJVnm0/LOGO-LA-HOLDING.png"
+        alt="La Holding S.r.l."
+        class="h-25 w-auto max-w-full object-contain"
+    >
+</div>
+            <h1 class="text-2xl font-bold text-slate-800 mb-2">Portale Stazione Appaltante</h1>
+            <p class="text-sm text-slate-500 mb-6">Inserisci il Codice Cantiere e la password assegnati per inviare segnalazioni o estrarre i report periodici.</p>
+            <form onsubmit="accediCantiere(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Codice Accesso Cantiere</label>
+                    <input type="text" id="input-codice" required placeholder="Es. MILANO-01" class="w-full border border-slate-300 rounded p-3 font-mono uppercase text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password accesso S.A.</label>
+                    <input type="password" id="input-pin" required autocomplete="off" placeholder="Password comunicata da La Holding" class="w-full border border-slate-300 rounded p-3 text-sm">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded transition text-sm">
+                    Accedi allo Spazio Cantiere
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- AREA OPERATIVA S.A. -->
+    <div id="area-operativa" class="hidden">
+       <header class="relative bg-blue-800 text-white p-4 shadow">
+
+    <!-- LOGO LA HOLDING -->
+    <img
+        src="https://i.ibb.co/JWJJVnm0/LOGO-LA-HOLDING.png"
+        alt="La Holding S.r.l."
+        class="h-30 w-auto max-w-64 object-contain mb-3
+               xl:absolute xl:left-6 xl:top-1/2
+               xl:-translate-y-1/2 xl:mb-0"
+    >
+            <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div class="flex items-center gap-4">
+                    <!-- LOGO S.A.: mostrato automaticamente solo dopo l'accesso al proprio cantiere -->
+                    <div id="contenitore-logo-sa" class="hidden shrink-0 bg-white rounded-lg p-2 shadow-sm">
+                        <img id="logo-sa" alt="Logo Stazione Appaltante" class="h-16 max-w-36 w-auto object-contain">
+                    </div>
+                    <div>
+                        
+                        <h1 id="header-nome-cantiere" class="text-xl font-bold">---</h1>
+                        <p id="header-date-appalto" class="text-xs text-blue-200 mt-0.5">---</p>
+                    </div>
+                </div>
+                <button onclick="esci()" class="bg-blue-900 hover:bg-blue-950 text-xs px-3 py-2 rounded border border-blue-700">
+                    Esci / Cambia Codice
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-8xl mx-auto mt-8 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Modulo Invio Segnalazione -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">📝 Nuova Segnalazione</h2>
+                <form id="form-segnalazione-sa" onsubmit="inviaSegnalazione(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Data Rilevamento *</label>
+                        <input type="date" id="data-ticket" required class="w-full border rounded p-2 text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Segnalatore (Nome e Ruolo) *</label>
+                        <input type="text" id="segnalatore-ticket" required placeholder="Es. Ing. Rossi (RUP / DL)" class="w-full border rounded p-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email del Segnalatore *</label>
+                        <input type="email" id="contatto-ticket" required placeholder="nome@ente.it" class="w-full border rounded p-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Luogo preciso della non conformità *</label>
+                        <input type="text" id="luogo-ticket" required maxlength="300" placeholder="Es. ingresso principale, piano terra" class="w-full border rounded p-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Categoria Non Conformità *</label>
+                        <select id="tipologia-ticket" required class="w-full border rounded p-2 text-sm bg-white">
+                            <option value="">Seleziona categoria...</option>
+                            <option value="Sicurezza / CSE">Sicurezza / CSE</option>
+                            <option value="Qualità Materiali / Esecuzione">Qualità Materiali / Esecuzione</option>
+                            <option value="Ritardo Cronoprogramma">Ritardo Cronoprogramma</option>
+                            <option value="Ambientale / Rifiuti">Ambientale / Rifiuti</option>
+                            <option value="Documentale / Subappalti">Documentale / Subappalti</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Gravità *</label>
+                        <select id="gravita-ticket" required class="w-full border rounded p-2 text-sm bg-white">
+                            <option value="">Seleziona gravità...</option>
+                            <option value="Bassa">Bassa</option>
+                            <option value="Media">Media</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Critica">Critica</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Descrizione Anomalia *</label>
+                        <textarea id="descrizione-ticket" rows="4" required placeholder="Dettagli della non conformità..." class="w-full border rounded p-2 text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Intervento richiesto *</label>
+                        <textarea id="richiesta-ticket" rows="3" required maxlength="3000" placeholder="Indicare l'intervento richiesto a La Holding" class="w-full border rounded p-2 text-sm"></textarea>
+                    </div>
+                    <button type="submit" id="invia-ticket" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded text-sm shadow">
+                        Invia Segnalazione
+                    </button>
+                </form>
+            </div>
+
+            <!-- Richiesta ed Estrazione Report Periodico -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-800 mb-2">📊 Richiesta Report Segnalazioni</h2>
+                <p class="text-xs text-slate-500 mb-4">Seleziona il mese o il periodo di interesse per visualizzare e scaricare il report delle segnalazioni del cantiere.</p>
+
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6 space-y-4">
+                    <div class="flex flex-wrap gap-4 text-sm">
+                        <label class="font-bold text-slate-700">Filtra per:</label>
+                        <label><input type="radio" name="filtroSA" value="tutti" checked onchange="aggiornaFiltriUI()"> Tutto lo storico</label>
+                        <label><input type="radio" name="filtroSA" value="mese" onchange="aggiornaFiltriUI()"> Mese specifico</label>
+                        <label><input type="radio" name="filtroSA" value="periodo" onchange="aggiornaFiltriUI()"> Periodo (Dal / Al)</label>
+                    </div>
+
+                    <div id="ui-mese" class="hidden flex items-center gap-2 text-sm">
+                        <span>Mese:</span>
+                        <input type="month" id="input-mese" onchange="renderTabellaSA()" class="border rounded p-1.5 bg-white">
+                    </div>
+
+                    <div id="ui-periodo" class="hidden flex flex-wrap items-center gap-2 text-sm">
+                        <span>Dal:</span>
+                        <input type="date" id="input-inizio" onchange="renderTabellaSA()" class="border rounded p-1.5 bg-white">
+                        <span>Al:</span>
+                        <input type="date" id="input-fine" onchange="renderTabellaSA()" class="border rounded p-1.5 bg-white">
+                    </div>
+
+                    <div class="pt-3 border-t flex justify-between items-center">
+                        <span id="totale-filtrati" class="text-xs font-bold text-slate-600">Segnalazioni: 0</span>
+                        <button onclick="scaricaReportSA()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded text-sm">
+                            📥 Scarica Report (Excel / CSV)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-slate-200">
+                        <thead class="bg-slate-100 text-slate-600">
+                            <tr>
+                                <th class="p-2.5 text-left border-b">ID</th>
+                                <th class="p-2.5 text-left border-b">Data</th>
+                                <th class="p-2.5 text-left border-b">Segnalatore & Contatto</th>
+                                <th class="p-2.5 text-left border-b">Categoria</th>
+                                <th class="p-2.5 text-left border-b">Gravità</th>
+                                <th class="p-2.5 text-left border-b">Descrizione</th>
+                                <th class="p-2.5 text-left border-b">Stato</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-sa"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // URL dell'Applicazione Web generato da Google Apps Script
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyX8jGaJU4CPejihMOHqGQ_TdC19DY34rQiYMCYbp_IuIG2GaoqCHBT-ALeoATqlSUE/exec';
+
+        async function gasRequest(method, path, payload, token='') {
+            const reqData = { method, path, payload: payload || {}, token };
+            
+            const response = await fetch(API_URL, {
+                method: 'POST', // Usiamo sempre POST verso GAS per aggirare i limiti di CORS e URL
+                body: JSON.stringify(reqData),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' } // Evita il blocco CORS del browser
+            });
+            
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || 'Connessione al servizio cloud non riuscita.');
+            return result.data;
+        }
+        let cantiereLoggato = null;
+        let saToken = sessionStorage.getItem('holding_sa_token') || '';
+        let ticketsSA = [];
+        const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[ch]));
+
+        async function apiSA(method,path,payload) {
+            try {
+                return await gasRequest(method,path,payload,saToken);
+            } catch(err) {
+                if (err.message.includes('SESSIONE_SCADUTA')) esci();
+                throw err;
+            }
+        }
+
+        async function caricaSegnalazioniSA(silenzioso=false) {
+            if (!saToken) return;
+            try {
+                const result = await apiSA('GET','/api/sa/snapshot');
+                cantiereLoggato = result.cantiere;
+                ticketsSA = result.tickets;
+                aggiornaIntestazioneSA();
+                renderTabellaSA();
+            } catch(err) { if (!silenzioso) alert(err.message); }
+        }
+
+        window.addEventListener('load', () => {
+            if (saToken) caricaSegnalazioniSA(true).then(() => {
+                if (saToken && cantiereLoggato) {
+                    document.getElementById('schermata-login').classList.add('hidden');
+                    document.getElementById('area-operativa').classList.remove('hidden');
+                }
+            });
+            setInterval(() => { if (saToken) caricaSegnalazioniSA(true); }, 30000);
+        });
+
+        // ============================================================
+        // LOGHI PERSONALIZZATI PER STAZIONE APPALTANTE
+        // Inserisci un URL HTTPS pubblico e diretto a PNG/JPG/SVG.
+        // Esempio (elimina // e sostituisci il codice e il link):
+        // "ROMA-03": "https://www.ente.it/immagini/logo.png",
+        // Per i loghi senza hosting si puo' anche usare una stringa data:image/...
+        // ============================================================
+        const LOGHI_SA = {
+            // "BITRITTO": "https://i.ibb.co/0jNS3kmP/Bitritto-Stemma.png",
+        };
+
+        function aggiornaLogoSA() {
+            const box = document.getElementById('contenitore-logo-sa');
+            const img = document.getElementById('logo-sa');
+            const url = cantiereLoggato && LOGHI_SA[cantiereLoggato.id];
+            box.classList.add('hidden');
+            if (!url || !(url.startsWith('https://') || url.startsWith('data:image/'))) {
+                img.removeAttribute('src');
+                return;
+            }
+            img.onload = () => box.classList.remove('hidden');
+            img.onerror = () => box.classList.add('hidden');
+            if (img.getAttribute('src') !== url) img.src = url;
+            else if (img.complete && img.naturalWidth > 0) box.classList.remove('hidden');
+        }
+
+        function aggiornaIntestazioneSA() {
+            document.getElementById('header-nome-cantiere').innerText = `${cantiereLoggato.nome} `;
+            document.getElementById('header-date-appalto').innerText = `Referente: ${cantiereLoggato.referente || '-'} | Inizio Appalto: ${formattaData(cantiereLoggato.dataInizio)} | Fine Appalto: ${formattaData(cantiereLoggato.dataFine)}`;
+            aggiornaLogoSA();
+        }
+
+        async function accediCantiere(e) {
+            e.preventDefault();
+            try {
+                const code = document.getElementById('input-codice').value.trim().toUpperCase();
+                const pin = document.getElementById('input-pin').value.trim();
+                const data = await gasRequest('POST','/api/sa/login',{code,pin});
+                saToken = data.token;
+                sessionStorage.setItem('holding_sa_token', saToken);
+                cantiereLoggato = data.cantiere;
+                document.getElementById('input-pin').value = '';
+                document.getElementById('schermata-login').classList.add('hidden');
+                document.getElementById('area-operativa').classList.remove('hidden');
+                document.getElementById('input-mese').value = new Date().toISOString().slice(0,7);
+                await caricaSegnalazioniSA();
+            } catch(err) { alert(err.message || 'Accesso non riuscito.'); }
+        }
+
+        function esci() {
+            nascondiPassword();
+            cantiereLoggato = null;
+            ticketsSA = [];
+            saToken = '';
+            sessionStorage.removeItem('holding_sa_token');
+            document.getElementById('input-codice').value = '';
+            document.getElementById('input-pin').value = '';
+            document.getElementById('area-operativa').classList.add('hidden');
+            document.getElementById('schermata-login').classList.remove('hidden');
+        }
+
+        async function inviaSegnalazione(e) {
+            e.preventDefault();
+            const btn = document.getElementById('invia-ticket');
+            btn.disabled = true; btn.textContent = 'Registrazione in corso…';
+            try {
+                const nuovo = {
+                    data: document.getElementById('data-ticket').value,
+                    segnalatore: document.getElementById('segnalatore-ticket').value.trim(),
+                    contatto: document.getElementById('contatto-ticket').value.trim(),
+                    luogo: document.getElementById('luogo-ticket').value.trim(),
+                    tipologia: document.getElementById('tipologia-ticket').value,
+                    gravita: document.getElementById('gravita-ticket').value,
+                    descrizione: document.getElementById('descrizione-ticket').value.trim(),
+                    richiesta: document.getElementById('richiesta-ticket').value.trim()
+                };
+                const result = await apiSA('POST','/api/sa/tickets',nuovo);
+                document.getElementById('form-segnalazione-sa').reset();
+                await caricaSegnalazioniSA(true);
+                alert(`Segnalazione ${result.ticket.id} REGISTRATA nell'archivio condiviso.\n` +
+                      (result.emailSent ? 'Notifica email inoltrata al server di posta.' : 'Notifica email non inviata: configurazione SMTP assente o errore. La segnalazione è comunque registrata.'));
+            } catch(err) { alert('Segnalazione non registrata: ' + err.message); }
+            finally { btn.disabled = false; btn.textContent = 'Invia Segnalazione'; }
+        }
+
+        function aggiornaFiltriUI() {
+            const mod = document.querySelector('input[name="filtroSA"]:checked').value;
+            document.getElementById('ui-mese').classList.toggle('hidden', mod !== 'mese');
+            document.getElementById('ui-periodo').classList.toggle('hidden', mod !== 'periodo');
+            renderTabellaSA();
+        }
+
+        function ottieniTicketsFiltrati() {
+            if (!cantiereLoggato) return [];
+            let lista = ticketsSA.filter(t => t.cantiereId === cantiereLoggato.id);
+            const mod = document.querySelector('input[name="filtroSA"]:checked').value;
+            if (mod === 'mese') {
+                const mese = document.getElementById('input-mese').value;
+                if (mese) lista = lista.filter(t => t.data.startsWith(mese));
+            } else if (mod === 'periodo') {
+                const inizio = document.getElementById('input-inizio').value;
+                const fine = document.getElementById('input-fine').value;
+                if (inizio) lista = lista.filter(t => t.data >= inizio);
+                if (fine) lista = lista.filter(t => t.data <= fine);
+            }
+            return lista;
+        }
+
+        function renderTabellaSA() {
+            const lista = ottieniTicketsFiltrati();
+            document.getElementById('totale-filtrati').innerText = `Segnalazioni nel periodo: ${lista.length}`;
+            const tbody = document.getElementById('tbody-sa');
+            tbody.innerHTML = '';
+
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Nessuna segnalazione trovata nel periodo selezionato.</td></tr>`;
+                return;
+            }
+
+            lista.forEach(t => {
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-2.5 font-mono text-xs">${t.id}</td>
+                        <td class="p-2.5 whitespace-nowrap">${formattaData(t.data)}</td>
+                        <td class="p-2.5">
+                            <div class="font-medium">${esc(t.segnalatore)}</div>
+                            <div class="text-xs text-blue-600 font-mono">${esc(t.contatto || '-')}</div>
+                        </td>
+                        <td class="p-2.5">${esc(t.tipologia)}</td>
+                        <td class="p-2.5 font-bold ${t.gravita === 'Critica' || t.gravita === 'Alta' ? 'text-red-600' : 'text-slate-600'}">${t.gravita}</td>
+                        <td class="p-2.5"><div>${esc(t.descrizione)}</div><div class="text-xs text-slate-500 mt-1">📍 ${esc(t.luogo || '-')}</div><div class="text-xs text-slate-500 mt-1">Intervento: ${esc(t.richiesta || '-')}</div></td>
+                        <td class="p-2.5"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs font-semibold">${t.stato}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function csvCell(v) {
+            let s = String(v ?? '').replace(/\r?\n/g, ' ');
+            if (/^[=+@\-\t\r]/.test(s)) s = "'" + s;
+            return '"' + s.replace(/"/g,'""') + '"';
+        }
+        function scaricaReportSA() {
+            const lista = ottieniTicketsFiltrati();
+            if (!lista.length) return alert('Nessuna segnalazione da esportare.');
+            const righe = [['ID','Data rilevamento','Data ricezione','Cantiere','Referente','Segnalatore','Email Segnalatore','Categoria','Gravità','Luogo','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura']];
+            lista.forEach(t => righe.push([t.id,formattaData(t.data),t.creatoIl,cantiereLoggato.nome,cantiereLoggato.referente,t.segnalatore,t.contatto,t.tipologia,t.gravita,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]));
+            const csv = '\uFEFF' + righe.map(row => row.map(csvCell).join(';')).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+            const link = document.createElement('a'); link.href=url;
+            link.download = `Report_${cantiereLoggato.id}_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+        }
+
+        function formattaData(d) {
+            if (!d) return "-";
+            const [a, m, g] = d.split('-');
+            return `${g}/${m}/${a}`;
+        }
+
+        // Occhietto disponibile per ogni campo password della pagina.
+        function impostaVisibilitaPassword(campo, visibile) {
+            campo.type = visibile ? 'text' : 'password';
+            const pulsante = campo.parentElement.querySelector('.password-toggle');
+            if (!pulsante) return;
+            const etichetta = visibile ? 'Nascondi password' : 'Mostra password';
+            pulsante.setAttribute('aria-label', etichetta);
+            pulsante.setAttribute('aria-pressed', String(visibile));
+            pulsante.title = etichetta;
+        }
+
+        function nascondiPassword(contenitore = document) {
+            contenitore.querySelectorAll('[data-password-toggle]').forEach(campo => {
+                impostaVisibilitaPassword(campo, false);
+            });
+        }
+
+        function inizializzaOcchiettiPassword() {
+            document.querySelectorAll('input[type="password"]').forEach(campo => {
+                if (campo.hasAttribute('data-password-toggle')) return;
+                campo.setAttribute('data-password-toggle', '');
+                const contenitore = document.createElement('div');
+                contenitore.className = 'password-field';
+                campo.before(contenitore);
+                contenitore.appendChild(campo);
+                const pulsante = document.createElement('button');
+                pulsante.type = 'button';
+                pulsante.className = 'password-toggle';
+                pulsante.setAttribute('aria-controls', campo.id);
+                pulsante.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="password-eye-slash" d="m3 3 18 18"/></svg>';
+                pulsante.addEventListener('click', () => {
+                    const inizio = campo.selectionStart;
+                    const fine = campo.selectionEnd;
+                    impostaVisibilitaPassword(campo, campo.type === 'password');
+                    campo.focus({preventScroll: true});
+                    if (inizio !== null && fine !== null) campo.setSelectionRange(inizio, fine);
+                });
+                contenitore.appendChild(pulsante);
+                impostaVisibilitaPassword(campo, false);
+            });
+        }
+
+        // Dopo invio, annullamento o ritorno alla pagina, i campi tornano nascosti.
+        document.addEventListener('submit', event => nascondiPassword(event.target), true);
+        document.addEventListener('reset', event => nascondiPassword(event.target), true);
+        window.addEventListener('pageshow', () => nascondiPassword());
+        inizializzaOcchiettiPassword();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionale Interno Cantieri - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .ticket-row { cursor: pointer; }
+        .ticket-row:hover { background: #eef2ff; }
+        .ticket-open { color: #4f46e5; text-align: left; font-weight: 600; }
+        .ticket-open:hover { text-decoration: underline; }
+        .ticket-open:focus-visible { outline: 2px solid #4f46e5; outline-offset: 4px; }
+        .ticket-description-cell { width: 30%; min-width: 12rem; max-width: 20rem; }
+        .ticket-preview { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden; overflow-wrap: anywhere; line-height: 1.4; max-height: 2.8em; max-width: 20rem; }
+        .ticket-place { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 20rem; }
+        #dettaglio-ticket { width: calc(100% - 2rem); max-width: 780px; max-height: 90vh;
+            max-height: 90dvh; margin: auto; padding: 0; border: 0; border-radius: 16px;
+            color: #1e293b; background: #fff; box-shadow: 0 24px 70px #0f172a40; overflow: hidden; }
+        #dettaglio-ticket[open] { display: flex; flex-direction: column; }
+        #dettaglio-ticket::backdrop { background: #0f172a99; }
+        .ticket-modal-header, .ticket-modal-footer { flex-shrink: 0; padding: 18px 24px; }
+        .ticket-modal-header { display: flex; align-items: flex-start; justify-content: space-between;
+            gap: 16px; border-bottom: 1px solid #e2e8f0; }
+        .ticket-modal-header h2 { font-size: 20px; font-weight: 700; line-height: 1.4; }
+        .ticket-modal-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; color: #64748b; margin-bottom: 4px; }
+        .ticket-modal-body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 24px; }
+        .ticket-modal-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px 24px; }
+        .ticket-modal-grid dt, .ticket-modal-section h3 { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 5px; }
+        .ticket-modal-grid dd { font-size: 14px; overflow-wrap: anywhere; }
+        .ticket-modal-section { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e2e8f0; }
+        .ticket-full-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.65; }
+        .ticket-modal-footer { display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; background: #f8fafc; }
+        .ticket-close { border: 1px solid #cbd5e1; background: white; border-radius: 8px;
+            padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .ticket-close:hover { background: #f1f5f9; }
+        .ticket-close:focus-visible { outline: 2px solid #4f46e5; outline-offset: 3px; }
+        .ticket-close-icon { padding: 6px 11px; }
+        @media (max-width: 540px) {
+            .ticket-modal-grid { grid-template-columns: 1fr; gap: 14px; }
+            .ticket-modal-header, .ticket-modal-body, .ticket-modal-footer { padding: 16px; }
+        }
+        .ticket-print { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+        .ticket-print:hover { background: #4338ca; }
+        #ticket-print-area { display: none; }
+        @media print {
+            @page { size: A4 portrait; margin: 16mm; }
+            html, body.ticket-printing { height: auto !important; min-height: 0 !important; overflow: visible !important; }
+            body.ticket-printing { display: block !important; margin: 0 !important; padding: 0 !important;
+                background: white !important; color: #111827 !important; }
+            body.ticket-printing > :not(#ticket-print-area) { display: none !important; }
+            body.ticket-printing #dettaglio-ticket::backdrop { display: none !important; background: transparent !important; }
+            body.ticket-printing > #ticket-print-area { display: block !important; width: 100%; font-family: Arial, sans-serif; }
+            #ticket-print-area .ticket-modal-header { display: block; padding: 0 0 12pt; break-after: avoid; }
+            #ticket-print-area .ticket-modal-header h2 { font-size: 17pt; }
+            #ticket-print-area .ticket-modal-body { display: block; padding: 14pt 0 0; height: auto;
+                max-height: none; overflow: visible; }
+            #ticket-print-area .ticket-modal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12pt 20pt; }
+            #ticket-print-area .ticket-modal-grid > div { break-inside: avoid; }
+            #ticket-print-area .ticket-modal-grid dd { margin: 0; font-size: 10pt; }
+            #ticket-print-area .ticket-modal-section { margin-top: 16pt; padding-top: 10pt; break-inside: auto; }
+            #ticket-print-area h3, #ticket-print-area dt { break-after: avoid; }
+            #ticket-print-area .ticket-full-text { font-size: 10pt; line-height: 1.5; white-space: pre-wrap;
+                overflow-wrap: anywhere; overflow: visible; max-height: none; orphans: 3; widows: 3; }
+        }
+    </style>
+
+    <style>
+        #modale-password-sa { width: calc(100% - 2rem); max-width: 460px; max-height: calc(100vh - 2rem);
+            max-height: calc(100dvh - 2rem); overflow-y: auto; margin: auto; padding: 24px; border: 0;
+            border-radius: 14px; background: #fff; color: #1e293b; box-shadow: 0 24px 70px #0f172a40; }
+        #modale-password-sa::backdrop { background: #0f172a99; }
+        .password-toggle:disabled { cursor: default; opacity: .4; }
+        #modale-modifica > div { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+        .password-field { position: relative; width: 100%; min-width: 0; }
+        .password-field > input { padding-right: 3.25rem !important; }
+        .password-toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center; justify-content: center; width: 40px; height: 32px;
+            padding: 0; border: 0; border-radius: 6px; background: transparent; color: #64748b; cursor: pointer; }
+        .password-toggle:hover { color: #4338ca; background: #eef2ff; }
+        .password-toggle:focus-visible { outline: 2px solid #4f46e5; outline-offset: 1px; }
+        .password-toggle svg { width: 20px; height: 20px; pointer-events: none; }
+        .password-toggle .password-eye-slash { display: none; }
+        .password-toggle[aria-pressed="true"] .password-eye-slash { display: block; }
+        .password-field > input::-ms-reveal { display: none; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 flex min-h-screen">
+
+    <!-- ======================================================= -->
+    <!-- MENU LATERALE (SIDEBAR)                                 -->
+    <!-- ======================================================= -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between shrink-0">
+        <div>
+            <div class="p-5 border-b border-slate-800">
+                <div class="flex flex-col items-center gap-3">
+    <img
+        src="https://i.ibb.co/JWJJVnm0/LOGO-LA-HOLDING.png"
+        alt="Logo La Holding"
+        class="h-25 max-w-full object-contain"
+    >
+
+    <h1 class="text-lg font-bold tracking-wide
+               text-white text-center">
+        Gestionale Cantieri
+    </h1>
+</div>
+                <p class="text-xs text-slate-400 mt-1 text-center">Pannello Amministrazione</p>
+            </div>
+            <nav class="p-4 space-y-2">
+                <button onclick="naviga('home')" id="nav-home" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold bg-indigo-600 text-white transition">
+                    <span>🏠</span> Home Page
+                </button>
+                <button onclick="naviga('segnalazioni', 'TUTTI')" id="nav-segnalazioni" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800 transition">
+                    <span>📋</span> Segnalazioni
+                </button>
+                <button onclick="naviga('scadenziario')" id="nav-scadenziario" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800 transition">
+                    <span>⏳</span> Scadenziario
+                </button>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center gap-2 text-xs text-emerald-400 font-semibold">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="stato-sincronizzazione">Connessione in attesa</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ======================================================= -->
+    <!-- CONTENUTO PRINCIPALE                                    -->
+    <!-- ======================================================= -->
+    <main class="flex-1 min-w-0 p-6 overflow-y-auto space-y-6 max-w-none mx-auto">
+
+        <!-- RIQUADRI DI RIEPILOGO INTERATTIVI (KPI) - Cliccabili -->
+        <div id="barra-kpi-globale" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div onclick="apriRiepilogoStato('TUTTI')" title="Clicca per aprire il riepilogo di tutte le segnalazioni" class="cursor-pointer bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-slate-700 hover:shadow-md hover:bg-slate-50 transition">
+                <div class="flex justify-between items-center">
+                    <p class="text-xs font-bold uppercase text-slate-500">Segnalazioni Ricevute</p>
+                    <span class="text-xs text-indigo-600 font-semibold">Vedi ➔</span>
+                </div>
+                <p id="kpi-totale" class="text-3xl font-extrabold text-slate-800 mt-1">0</p>
+            </div>
+            <div onclick="apriRiepilogoStato('Aperto')" title="Clicca per aprire il riepilogo delle segnalazioni Aperte" class="cursor-pointer bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-500 hover:shadow-md hover:bg-red-50/30 transition">
+                <div class="flex justify-between items-center">
+                    <p class="text-xs font-bold uppercase text-red-600">Segnalazioni Aperte</p>
+                    <span class="text-xs text-red-600 font-semibold">Vedi ➔</span>
+                </div>
+                <p id="kpi-aperte" class="text-3xl font-extrabold text-red-600 mt-1">0</p>
+            </div>
+            <div onclick="apriRiepilogoStato('In Lavorazione')" title="Clicca per aprire il riepilogo delle segnalazioni In Lavorazione" class="cursor-pointer bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500 hover:shadow-md hover:bg-amber-50/30 transition">
+                <div class="flex justify-between items-center">
+                    <p class="text-xs font-bold uppercase text-amber-600">In Lavorazione</p>
+                    <span class="text-xs text-amber-600 font-semibold">Vedi ➔</span>
+                </div>
+                <p id="kpi-lavorazione" class="text-3xl font-extrabold text-amber-600 mt-1">0</p>
+            </div>
+            <div onclick="apriRiepilogoStato('Risolto')" title="Clicca per aprire il riepilogo delle segnalazioni Risolte / Chiuse" class="cursor-pointer bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500 hover:shadow-md hover:bg-emerald-50/30 transition">
+                <div class="flex justify-between items-center">
+                    <p class="text-xs font-bold uppercase text-emerald-600">Risolte / Chiuse</p>
+                    <span class="text-xs text-emerald-600 font-semibold">Vedi ➔</span>
+                </div>
+                <p id="kpi-risolte" class="text-3xl font-extrabold text-emerald-600 mt-1">0</p>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- VISTA 1: HOME PAGE (SOLO ANAGRAFICA CON PAGINAZIONE)    -->
+        <!-- ======================================================= -->
+        <div id="vista-home" class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-800 mb-4">Gestione Anagrafica Cantieri e Codici S.A.</h2>
+
+                <!-- Form Nuovo Cantiere con Nome Referente -->
+                <form onsubmit="aggiungiCantiere(event)" class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Codice Appalto/S.A. *</label>
+                        <input type="text" id="codice-cantiere" required placeholder="Es. ROMA-01" class="w-full border p-2 rounded text-sm font-mono uppercase bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Nome Cantiere *</label>
+                        <input type="text" id="nome-cantiere" required placeholder="Nome Cantiere" class="w-full border p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Nome Referente *</label>
+                        <input type="text" id="referente-cantiere" required placeholder="Es. Ing. Bianchi" class="w-full border p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Inizio Appalto *</label>
+                        <input type="date" id="inizio-appalto" required class="w-full border p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Fine Appalto *</label>
+                        <input type="date" id="fine-appalto" required class="w-full border p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Email Notifiche *</label>
+                        <input type="email" id="email-notifica" required placeholder="email@azienda.it" class="w-full border p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <label for="password-cantiere" class="block text-xs font-bold text-slate-600 mb-1">Password accesso S.A. *</label>
+                        <input type="password" id="password-cantiere" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Almeno 8 caratteri" class="w-full border p-2 rounded text-sm bg-white">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded text-sm transition">
+                            ➕ Aggiungi
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Controlli Paginazione Superiore -->
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-3 gap-2 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-600">Mostra</span>
+                        <select id="cantieri-per-pagina" onchange="cambiaLimitePagina()" class="border rounded p-1.5 bg-white font-semibold">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span class="text-slate-600">cantieri per pagina</span>
+                    </div>
+                    <span id="info-paginazione-cantieri" class="text-xs text-slate-500 font-semibold"></span>
+                </div>
+
+                <!-- Tabella Anagrafica Cantieri -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-slate-200">
+                        <thead class="bg-slate-100 text-slate-600">
+                            <tr>
+                                <th class="p-3 text-left border-b">Codice Accesso S.A.</th>
+                                <th class="p-3 text-left border-b">Nome Cantiere</th>
+                                <th class="p-3 text-left border-b">Nome Referente</th>
+                                <th class="p-3 text-left border-b">Inizio Appalto</th>
+                                <th class="p-3 text-left border-b">Fine Appalto</th>
+                                <th class="p-3 text-left border-b">Email Preposta</th>
+                                <th class="p-3 text-center border-b">Ticket</th>
+                                <th class="p-3 text-right border-b">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabella-cantieri"></tbody>
+                    </table>
+                </div>
+
+                <!-- Controlli Scorrimento Pagine Inferiore -->
+                <div class="flex justify-between items-center mt-4 pt-3 border-t border-slate-100">
+                    <button onclick="cambiaPaginaCantieri(-1)" id="btn-prev-cantieri" class="px-3 py-1.5 border rounded text-xs font-bold bg-white hover:bg-slate-50 disabled:opacity-40">
+                        ⬅ Precedente
+                    </button>
+                    <div id="numeri-pagina-cantieri" class="flex gap-1"></div>
+                    <button onclick="cambiaPaginaCantieri(1)" id="btn-next-cantieri" class="px-3 py-1.5 border rounded text-xs font-bold bg-white hover:bg-slate-50 disabled:opacity-40">
+                        Successiva ➔
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- VISTA 2: PAGINA SEGNALAZIONI (FILTRO STATO E CANTIERE)  -->
+        <!-- ======================================================= -->
+        <div id="vista-segnalazioni" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 border-b pb-4">
+                    <div>
+                        <h2 id="titolo-pagina-segnalazioni" class="text-xl font-bold text-slate-800">Riepilogo Segnalazioni</h2>
+                        <p class="text-xs text-slate-500">Filtra le segnalazioni per stato di avanzamento o per singolo cantiere.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400">Filtra per Stato</label>
+                            <select id="filtro-stato-segnalazioni" onchange="renderPaginaSegnalazioni()" class="border p-2 rounded text-sm bg-white font-semibold">
+                                <option value="TUTTI">Tutti gli stati</option>
+                                <option value="Aperto">🔴 Aperta</option>
+                                <option value="In Lavorazione">🟡 In Lavorazione</option>
+                                <option value="Risolto">🟢 Risolta / Chiusa</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400">Filtra per Cantiere</label>
+                            <select id="filtro-cantiere-segnalazioni" onchange="renderPaginaSegnalazioni()" class="border p-2 rounded text-sm bg-white">
+                                <option value="TUTTI">Tutti i cantieri</option>
+                            </select>
+                        </div>
+                        <div class="pt-3">
+                            <button onclick="esportaCSVSegnalazioni()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2 rounded">
+                                📥 Esporta CSV Filtrato
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-slate-200">
+                        <thead class="bg-slate-100 text-slate-600">
+                            <tr>
+                                <th class="p-3 text-left border-b">ID</th>
+                                <th class="p-3 text-left border-b">Data</th>
+                                <th class="p-3 text-left border-b">Cantiere & Referente</th>
+                                <th class="p-3 text-left border-b">Segnalatore & Contatto</th>
+                                <th class="p-3 text-left border-b">Categoria & Gravità</th>
+                                <th class="p-3 text-left border-b">Descrizione</th>
+                                <th class="p-3 text-left border-b">Stato Lavorazione</th>
+                                <th class="p-3 text-right border-b">Elimina</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabella-tickets-globale"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- VISTA 3: SCADENZIARIO APPALTI                           -->
+        <!-- ======================================================= -->
+        <div id="vista-scadenziario" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="mb-6 border-b pb-4">
+                    <h2 class="text-xl font-bold text-slate-800">⏳ Scadenziario Appalti Cantieri</h2>
+                    <p class="text-xs text-slate-500">Elenco ordinato automaticamente per data di Fine Appalto più prossima alla scadenza.</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-slate-200">
+                        <thead class="bg-slate-100 text-slate-600">
+                            <tr>
+                                <th class="p-3 text-left border-b">Codice Appalto</th>
+                                <th class="p-3 text-left border-b">Nome Cantiere</th>
+                                <th class="p-3 text-left border-b">Nome Referente</th>
+                                <th class="p-3 text-left border-b">Inizio Appalto</th>
+                                <th class="p-3 text-left border-b">Fine Appalto</th>
+                                <th class="p-3 text-left border-b">Stato Scadenza</th>
+                                <th class="p-3 text-right border-b">Scheda</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabella-scadenziario"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- VISTA 4: PAGINA SINGOLA DI RIEPILOGO CANTIERE / S.A.    -->
+        <!-- ======================================================= -->
+        <div id="vista-dettaglio-cantiere" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <button onclick="naviga('home')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 mb-2 inline-flex items-center gap-1">
+                        ⬅ Torna alla Home Page
+                    </button>
+                    <div class="flex items-center gap-3">
+                        <h2 id="dettaglio-titolo" class="text-2xl font-bold text-slate-800">Nome Cantiere</h2>
+                        <span id="dettaglio-codice" class="bg-indigo-100 text-indigo-800 font-mono text-xs font-bold px-2.5 py-1 rounded">CODICE</span>
+                    </div>
+                    <p id="dettaglio-info" class="text-sm text-slate-500 mt-1">Referente: -- | Inizio: -- | Fine: -- | Email: --</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="apriModaleModifica(cantiereSelezionatoId)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-3 py-2 rounded">
+                        ✏️ Modifica Cantiere
+                    </button>
+                    <button onclick="esportaCSVCantiereSingolo(cantiereSelezionatoId)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded">
+                        📥 Scarica Report Cantiere (CSV)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Riquadri KPI del singolo cantiere -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-indigo-600">
+                    <p class="text-xs font-bold uppercase text-slate-500">Totale Cantiere</p>
+                    <p id="kpi-det-totale" class="text-3xl font-extrabold text-slate-800 mt-1">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-500">
+                    <p class="text-xs font-bold uppercase text-red-600">Aperte</p>
+                    <p id="kpi-det-aperte" class="text-3xl font-extrabold text-red-600 mt-1">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
+                    <p class="text-xs font-bold uppercase text-amber-600">In Lavorazione</p>
+                    <p id="kpi-det-lavorazione" class="text-3xl font-extrabold text-amber-600 mt-1">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
+                    <p class="text-xs font-bold uppercase text-emerald-600">Risolte / Chiuse</p>
+                    <p id="kpi-det-risolte" class="text-3xl font-extrabold text-emerald-600 mt-1">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Storico Segnalazioni del Cantiere</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-slate-200">
+                        <thead class="bg-slate-100 text-slate-600">
+                            <tr>
+                                <th class="p-3 text-left border-b">ID</th>
+                                <th class="p-3 text-left border-b">Data</th>
+                                <th class="p-3 text-left border-b">Segnalatore & Contatto</th>
+                                <th class="p-3 text-left border-b">Categoria & Gravità</th>
+                                <th class="p-3 text-left border-b">Descrizione</th>
+                                <th class="p-3 text-left border-b">Stato Lavorazione</th>
+                                <th class="p-3 text-right border-b">Elimina</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabella-tickets-dettaglio"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ======================================================= -->
+    <!-- MODALE MODIFICA CANTIERE                                -->
+    <!-- ======================================================= -->
+    <div id="modale-modifica" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-slate-800">✏️ Modifica Dati Cantiere</h3>
+                <button onclick="chiudiModaleModifica()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <form onsubmit="salvaModificaCantiere(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Codice Accesso S.A. (Fisso)</label>
+                    <input type="text" id="edit-codice" disabled class="w-full border bg-slate-100 text-slate-500 p-2 rounded text-sm font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nome Cantiere *</label>
+                    <input type="text" id="edit-nome" required class="w-full border p-2 rounded text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nome Referente *</label>
+                    <input type="text" id="edit-referente" required class="w-full border p-2 rounded text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Inizio Appalto *</label>
+                        <input type="date" id="edit-inizio" required class="w-full border p-2 rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Fine Appalto *</label>
+                        <input type="date" id="edit-fine" required class="w-full border p-2 rounded text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Preposta Notifiche *</label>
+                    <input type="email" id="edit-email" required class="w-full border p-2 rounded text-sm">
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="chiudiModaleModifica()" class="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 rounded font-semibold text-slate-700">Annulla</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold">Salva Modifiche</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Cambio password S.A. separato dalla modifica dei dati del cantiere. -->
+    <dialog id="modale-password-sa" aria-labelledby="titolo-password-sa" aria-describedby="password-sa-cantiere">
+        <div class="flex items-start justify-between gap-3 border-b pb-3 mb-4">
+            <div>
+                <h3 id="titolo-password-sa" class="text-lg font-bold text-slate-800">MODIFICA PASSWORD</h3>
+                <p id="password-sa-cantiere" class="text-sm text-slate-500 mt-1 break-words"></p>
+            </div>
+            <button id="chiudi-password-sa" type="button" onclick="chiudiPasswordSA()" aria-label="Chiudi cambio password" class="text-slate-500 hover:text-slate-800 p-2 rounded disabled:opacity-40">✕</button>
+        </div>
+        <form id="form-password-sa" onsubmit="salvaPasswordSA(event)">
+            <input type="hidden" id="password-sa-codice">
+            <fieldset id="campi-password-sa" class="space-y-4">
+                <div>
+                    <label for="password-sa-nuova" class="block text-xs font-bold uppercase text-slate-600 mb-1">Nuova password</label>
+                    <input type="password" id="password-sa-nuova" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Almeno 8 caratteri" aria-describedby="password-sa-aiuto" class="w-full border p-3 rounded text-sm" autofocus>
+                    <p id="password-sa-aiuto" class="text-xs text-slate-500 mt-1">Da 8 a 128 caratteri.</p>
+                </div>
+                <div>
+                    <label for="password-sa-conferma" class="block text-xs font-bold uppercase text-slate-600 mb-1">Conferma nuova password</label>
+                    <input type="password" id="password-sa-conferma" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Ripeti la nuova password" class="w-full border p-3 rounded text-sm">
+                </div>
+                <p id="errore-password-sa" role="alert" class="hidden text-sm text-red-700"></p>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="chiudiPasswordSA()" class="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 rounded font-semibold text-slate-700 disabled:opacity-40">Annulla</button>
+                    <button id="salva-password-sa" type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold disabled:opacity-50">Salva password</button>
+                </div>
+            </fieldset>
+        </form>
+    </dialog>
+
+    <!-- Dettaglio completo: i testi originali sono letti senza modificarli. -->
+    <dialog id="dettaglio-ticket" aria-labelledby="ticket-modal-title">
+        <header class="ticket-modal-header">
+            <div>
+                <p class="ticket-modal-eyebrow">Dettaglio segnalazione</p>
+                <h2 id="ticket-modal-title">Segnalazione</h2>
+            </div>
+            <button type="button" class="ticket-close ticket-close-icon" onclick="chiudiDettaglioTicket()" aria-label="Chiudi dettaglio" autofocus>✕</button>
+        </header>
+        <div class="ticket-modal-body" id="ticket-modal-body">
+            <dl class="ticket-modal-grid">
+                <div><dt>Cantiere</dt><dd id="ticket-modal-cantiere"></dd></div>
+                <div><dt>Data della non conformità</dt><dd id="ticket-modal-data"></dd></div>
+                <div><dt>Referente del cantiere</dt><dd id="ticket-modal-referente"></dd></div>
+                <div><dt>Stato di lavorazione</dt><dd id="ticket-modal-stato"></dd></div>
+                <div><dt>Segnalatore</dt><dd id="ticket-modal-segnalatore"></dd></div>
+                <div><dt>Contatto del segnalatore</dt><dd id="ticket-modal-contatto"></dd></div>
+                <div><dt>Categoria</dt><dd id="ticket-modal-categoria"></dd></div>
+                <div><dt>Gravità</dt><dd id="ticket-modal-gravita"></dd></div>
+            </dl>
+            <section class="ticket-modal-section"><h3>Luogo della non conformità</h3><p id="ticket-modal-luogo" class="ticket-full-text"></p></section>
+            <section class="ticket-modal-section"><h3>Descrizione completa</h3><p id="ticket-modal-descrizione" class="ticket-full-text"></p></section>
+            <section class="ticket-modal-section"><h3>Intervento richiesto</h3><p id="ticket-modal-richiesta" class="ticket-full-text"></p></section>
+        </div>
+        <footer class="ticket-modal-footer">
+            <button type="button" class="ticket-close ticket-print" onclick="stampaDettaglioTicket()">Stampa</button>
+            <button type="button" class="ticket-close" onclick="chiudiDettaglioTicket()">Chiudi dettaglio</button>
+        </footer>
+    </dialog>
+
+    <!-- Autenticazione amministratore; le altre sezioni restano inalterate. -->
+    <div id="accesso-amministratore" class="fixed inset-0 z-[100] bg-slate-900/90 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl p-7 w-full max-w-md">
+            <h2 class="text-xl font-bold mb-2">Accesso gestionale La Holding</h2>
+            <p class="text-sm text-slate-500 mb-5">Inserisci la password amministratore per collegarti all'archivio condiviso.</p>
+            <form onsubmit="accediAmministratore(event)" class="space-y-3">
+                <input id="password-amministratore" type="password" required autocomplete="current-password" placeholder="Password amministratore" class="w-full border rounded p-3 text-sm">
+                <p id="errore-admin" class="text-sm text-red-700"></p>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold p-3 rounded">Accedi</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // URL dell'Applicazione Web generato da Google Apps Script
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyX8jGaJU4CPejihMOHqGQ_TdC19DY34rQiYMCYbp_IuIG2GaoqCHBT-ALeoATqlSUE/exec';
+
+        async function gasRequest(method, path, payload, token='') {
+            const reqData = { method, path, payload: payload || {}, token };
+            
+            const response = await fetch(API_URL, {
+                method: 'POST', // Usiamo sempre POST verso GAS per aggirare i limiti di CORS e URL
+                body: JSON.stringify(reqData),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' } // Evita il blocco CORS del browser
+            });
+            
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || 'Connessione al servizio cloud non riuscita.');
+            return result.data;
+        }
+        let adminToken = sessionStorage.getItem('holding_admin_token') || '';
+        let cantieri = [];
+        let tickets = [];
+        let vistaAttiva = 'home';
+        let cantiereSelezionatoId = null;
+        let paginaCorrenteCantieri = 1;
+        let cantieriPerPagina = 10;
+
+        const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[ch]));
+
+        async function apiCall(method, path, payload) {
+            try {
+                return await gasRequest(method,path,payload,adminToken);
+            } catch(error) {
+                if (error.message.includes('SESSIONE_SCADUTA')) {
+                    adminToken = '';
+                    sessionStorage.removeItem('holding_admin_token');
+                    nascondiPassword();
+                    chiudiDettaglioTicket();
+                    chiudiPasswordSA(true);
+                    document.getElementById('accesso-amministratore').classList.remove('hidden');
+                }
+                throw error;
+            }
+        }
+
+        async function accediAmministratore(e) {
+            e.preventDefault();
+            const errorBox = document.getElementById('errore-admin');
+            errorBox.textContent = '';
+            try {
+                const pass = document.getElementById('password-amministratore').value;
+                const result = await gasRequest('POST','/api/admin/login',{password:pass});
+                adminToken = result.token;
+                sessionStorage.setItem('holding_admin_token', adminToken);
+                document.getElementById('password-amministratore').value = '';
+                const success = await caricaDati(true);
+                if (!success) throw new Error('Impossibile leggere l’archivio online.');
+                document.getElementById('accesso-amministratore').classList.add('hidden');
+            } catch(err) { errorBox.textContent = err.message || 'Accesso non riuscito.'; }
+        }
+
+        async function caricaDati(silenzioso=false) {
+            try {
+                const data = await apiCall('GET', '/api/admin/snapshot');
+                cantieri = data.cantieri;
+                tickets = data.tickets;
+                aggiornaFiltroCantieri();
+                renderTutto();
+                const stato = document.getElementById('stato-sincronizzazione');
+                if (stato) stato.textContent = 'Sincronizzazione attiva';
+                return true;
+            } catch (err) {
+                const stato = document.getElementById('stato-sincronizzazione');
+                if (stato) stato.textContent = 'Connessione non disponibile';
+                if (!silenzioso) alert(err.message);
+                return false;
+            }
+        }
+
+        window.addEventListener('load', () => {
+            if (adminToken) caricaDati(true).then((success) => {
+                if (success && adminToken) document.getElementById('accesso-amministratore').classList.add('hidden');
+            });
+            setInterval(() => { if (adminToken) caricaDati(true); }, 30000);
+        });
+
+        // ==========================================
+        // NAVIGAZIONE MENU LATERALE E KPI
+        // ==========================================
+        function naviga(sezione, statoFiltro = null) {
+            vistaAttiva = sezione;
+            if (sezione !== 'dettaglio') cantiereSelezionatoId = null;
+
+            document.getElementById('vista-home').classList.toggle('hidden', sezione !== 'home');
+            document.getElementById('vista-segnalazioni').classList.toggle('hidden', sezione !== 'segnalazioni');
+            document.getElementById('vista-scadenziario').classList.toggle('hidden', sezione !== 'scadenziario');
+            document.getElementById('vista-dettaglio-cantiere').classList.toggle('hidden', sezione !== 'dettaglio');
+
+            // Stile attivo menu laterale
+            const voci = ['home', 'segnalazioni', 'scadenziario'];
+            voci.forEach(v => {
+                const btn = document.getElementById(`nav-${v}`);
+                if (sezione === v) {
+                    btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold bg-indigo-600 text-white transition";
+                } else {
+                    btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800 transition";
+                }
+            });
+
+            if (sezione === 'segnalazioni' && statoFiltro !== null) {
+                document.getElementById('filtro-stato-segnalazioni').value = statoFiltro;
+            }
+
+            renderTutto();
+            window.scrollTo(0, 0);
+        }
+
+        // Cliccando sui riquadri KPI in alto si apre la pagina di riepilogo per quel tipo di segnalazione
+        function apriRiepilogoStato(stato) {
+            document.getElementById('filtro-cantiere-segnalazioni').value = 'TUTTI';
+            naviga('segnalazioni', stato);
+        }
+
+        function apriDettaglioCantiere(idCantiere) {
+            cantiereSelezionatoId = idCantiere;
+            naviga('dettaglio');
+        }
+
+        function renderTutto() {
+            aggiornaBoxKPI(tickets, 'kpi');
+            if (vistaAttiva === 'home') renderHomeCantieri();
+            if (vistaAttiva === 'segnalazioni') renderPaginaSegnalazioni();
+            if (vistaAttiva === 'scadenziario') renderScadenziario();
+            if (vistaAttiva === 'dettaglio') renderDettaglioCantiere();
+            if (dialogTicket.open) aggiornaDettaglioTicket();
+        }
+
+        // ==========================================
+        // PAGINAZIONE E GESTIONE CANTIERI (HOME)
+        // ==========================================
+        function cambiaLimitePagina() {
+            cantieriPerPagina = parseInt(document.getElementById('cantieri-per-pagina').value);
+            paginaCorrenteCantieri = 1;
+            renderHomeCantieri();
+        }
+
+        function cambiaPaginaCantieri(direzione) {
+            const totPagine = Math.ceil(cantieri.length / cantieriPerPagina) || 1;
+            paginaCorrenteCantieri = Math.min(Math.max(1, paginaCorrenteCantieri + direzione), totPagine);
+            renderHomeCantieri();
+        }
+
+        function vaiAPaginaCantieri(num) {
+            paginaCorrenteCantieri = num;
+            renderHomeCantieri();
+        }
+
+        function renderHomeCantieri() {
+            const tbodyC = document.getElementById('tabella-cantieri');
+            tbodyC.innerHTML = '';
+
+            const totElementi = cantieri.length;
+            const totPagine = Math.ceil(totElementi / cantieriPerPagina) || 1;
+            if (paginaCorrenteCantieri > totPagine) paginaCorrenteCantieri = totPagine;
+
+            const inizio = (paginaCorrenteCantieri - 1) * cantieriPerPagina;
+            const fine = inizio + cantieriPerPagina;
+            const cantieriPaginati = cantieri.slice(inizio, fine);
+
+            document.getElementById('info-paginazione-cantieri').innerText = 
+                `Visualizzati ${totElementi === 0 ? 0 : inizio + 1}-${Math.min(fine, totElementi)} di ${totElementi} cantieri (Pagina ${paginaCorrenteCantieri} di ${totPagine})`;
+
+            if (cantieriPaginati.length === 0) {
+                tbodyC.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">Nessun cantiere registrato.</td></tr>`;
+            } else {
+                cantieriPaginati.forEach(c => {
+                    const tot = tickets.filter(t => t.cantiereId === c.id).length;
+                    tbodyC.innerHTML += `
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="p-3 font-mono font-bold">
+                                <button onclick="apriDettaglioCantiere('${c.id}')" class="text-indigo-600 hover:text-indigo-900 underline decoration-dotted underline-offset-4">
+                                    ${c.id}
+                                </button>
+                            </td>
+                            <td class="p-3 font-semibold">${esc(c.nome)}</td>
+                            <td class="p-3 text-slate-700">${esc(c.referente || '-')}</td>
+                            <td class="p-3 whitespace-nowrap">${formattaData(c.dataInizio)}</td>
+                            <td class="p-3 whitespace-nowrap">${formattaData(c.dataFine)}</td>
+                            <td class="p-3 text-slate-600">${esc(c.email)}</td>
+                            <td class="p-3 text-center font-bold">${tot}</td>
+                            <td class="p-3 text-right whitespace-nowrap space-x-1">
+                                <button onclick="apriDettaglioCantiere('${c.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold px-2.5 py-1 rounded">
+                                    📊 Riepilogo
+                                </button>
+                                <button onclick="apriModaleModifica('${c.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded">
+                                    ✏️ Modifica
+                                </button>
+                                <button onclick="apriCambioPasswordSA('${c.id}')" data-password-cantiere="${esc(c.id)}" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold px-2.5 py-1 rounded">🔐 MODIF. PASS.</button>
+                                <button onclick="eliminaCantiere('${c.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-2.5 py-1 rounded">
+                                    🗑️ Elimina
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Bottoni di paginazione
+            document.getElementById('btn-prev-cantieri').disabled = paginaCorrenteCantieri <= 1;
+            document.getElementById('btn-next-cantieri').disabled = paginaCorrenteCantieri >= totPagine;
+
+            const boxNumeri = document.getElementById('numeri-pagina-cantieri');
+            boxNumeri.innerHTML = '';
+            for (let i = 1; i <= totPagine; i++) {
+                const attivo = i === paginaCorrenteCantieri ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100';
+                boxNumeri.innerHTML += `<button onclick="vaiAPaginaCantieri(${i})" class="px-2.5 py-1 border rounded text-xs font-bold ${attivo}">${i}</button>`;
+            }
+        }
+
+        // ==========================================
+        // PAGINA SEGNALAZIONI (FILTRO STATO/CANTIERE)
+        // ==========================================
+        function renderPaginaSegnalazioni() {
+            const statoSel = document.getElementById('filtro-stato-segnalazioni').value;
+            const cantiereSel = document.getElementById('filtro-cantiere-segnalazioni').value;
+
+            const mappaTitoli = {
+                'TUTTI': 'Riepilogo Globale: Tutte le Segnalazioni Ricevute',
+                'Aperto': '🔴 Riepilogo Segnalazioni Aperte',
+                'In Lavorazione': '🟡 Riepilogo Segnalazioni In Lavorazione',
+                'Risolto': '🟢 Riepilogo Segnalazioni Risolte / Chiuse'
+            };
+            document.getElementById('titolo-pagina-segnalazioni').innerText = mappaTitoli[statoSel] || 'Riepilogo Segnalazioni';
+
+            const filtrati = tickets.filter(t => {
+                const matchStato = statoSel === 'TUTTI' || t.stato === statoSel;
+                const matchCantiere = cantiereSel === 'TUTTI' || t.cantiereId === cantiereSel;
+                return matchStato && matchCantiere;
+            });
+
+            const tbody = document.getElementById('tabella-tickets-globale');
+            tbody.innerHTML = '';
+
+            if (filtrati.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">Nessuna segnalazione trovata per i filtri selezionati.</td></tr>`;
+                return;
+            }
+
+            filtrati.forEach(t => {
+                const c = cantieri.find(x => x.id === t.cantiereId) || { nome: "Cantiere Eliminato", referente: "-" };
+                tbody.innerHTML += `
+                    <tr class="border-b ticket-row" data-ticket-id="${esc(t.id)}">
+                        <td class="p-3 font-mono text-xs"><button type="button" class="ticket-open" data-apri-ticket="${esc(t.id)}" aria-haspopup="dialog" aria-controls="dettaglio-ticket" aria-label="Apri dettaglio segnalazione ${esc(t.id)}">${esc(t.id)}</button></td>
+                        <td class="p-3 whitespace-nowrap">${formattaData(t.data)}</td>
+                        <td class="p-3">
+                            <div class="font-semibold">${esc(c.nome)}</div>
+                            <div class="text-xs text-slate-500">Ref: ${esc(c.referente || '-')} | <button onclick="apriDettaglioCantiere('${t.cantiereId}')" class="font-mono text-indigo-600 hover:underline">${t.cantiereId}</button></div>
+                        </td>
+                        <td class="p-3">
+                            <div class="font-medium">${esc(t.segnalatore)}</div>
+                            <div class="text-xs text-blue-600 font-mono">${esc(t.contatto || '-')}</div>
+                        </td>
+                        <td class="p-3"><div>${esc(t.tipologia)}</div><span class="text-xs font-bold ${t.gravita === 'Critica' || t.gravita === 'Alta' ? 'text-red-600' : 'text-slate-600'}">${t.gravita}</span></td>
+                        <td class="p-3 ticket-description-cell">
+                            <div class="ticket-preview">${esc(anteprimaTicket(t.descrizione, 160))}</div>
+                            <div class="ticket-place text-xs text-slate-500 mt-1">📍 ${esc(anteprimaTicket(t.luogo, 60))}</div>
+                            <span class="text-xs text-indigo-600 font-semibold mt-1 block">Apri dettaglio →</span>
+                        </td>
+                        <td class="p-3">
+                            <select onchange="apriModaleStato('${t.id}', this.value, '${t.stato}', this)" class="border rounded p-1 text-xs font-semibold bg-white">
+                                <option value="Aperto" ${t.stato === 'Aperto' ? 'selected' : ''}>🔴 Aperta</option>
+                                <option value="In Lavorazione" ${t.stato === 'In Lavorazione' ? 'selected' : ''}>🟡 In Lavorazione</option>
+                                <option value="Risolto" ${t.stato === 'Risolto' ? 'selected' : ''}>🟢 Risolta / Chiusa</option>
+                            </select>
+                        </td>
+                        <td class="p-3 text-right">
+                            <button onclick="eliminaTicket('${t.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">✕</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ==========================================
+        // PAGINA SCADENZIARIO (ORDINATA PER SCADENZA)
+        // ==========================================
+        function renderScadenziario() {
+            const tbody = document.getElementById('tabella-scadenziario');
+            tbody.innerHTML = '';
+
+            if (cantieri.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Nessun appalto in scadenziario.</td></tr>`;
+                return;
+            }
+
+            // Ordina per dataFine crescente (il più prossimo alla scadenza in cima)
+            const ordinati = [...cantieri].sort((a, b) => new Date(a.dataFine) - new Date(b.dataFine));
+            const oggi = new Date();
+            oggi.setHours(0,0,0,0);
+
+            ordinati.forEach(c => {
+                const fineData = new Date(c.dataFine);
+                const diffGiorni = Math.ceil((fineData - oggi) / (1000 * 60 * 60 * 24));
+
+                let badgeScadenza = '';
+                if (diffGiorni < 0) {
+                    badgeScadenza = `<span class="bg-red-100 text-red-700 font-bold px-2.5 py-1 rounded text-xs">Scaduto da ${Math.abs(diffGiorni)} gg</span>`;
+                } else if (diffGiorni <= 30) {
+                    badgeScadenza = `<span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded text-xs">In scadenza tra ${diffGiorni} gg</span>`;
+                } else {
+                    badgeScadenza = `<span class="bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-1 rounded text-xs">Attivo (-${diffGiorni} gg)</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-mono font-bold text-indigo-700">${c.id}</td>
+                        <td class="p-3 font-semibold">${esc(c.nome)}</td>
+                        <td class="p-3 text-slate-700">${esc(c.referente || '-')}</td>
+                        <td class="p-3 whitespace-nowrap">${formattaData(c.dataInizio)}</td>
+                        <td class="p-3 whitespace-nowrap font-bold">${formattaData(c.dataFine)}</td>
+                        <td class="p-3">${badgeScadenza}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="apriDettaglioCantiere('${c.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold px-3 py-1 rounded">
+                                📊 Apri Riepilogo
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ==========================================
+        // OPERAZIONI CRUD CANTIERI E TICKETS
+        // ==========================================
+        async function aggiungiCantiere(e) {
+            e.preventDefault();
+            const f = e.target;
+            try {
+                const dati = {
+                    id: document.getElementById('codice-cantiere').value.trim().toUpperCase(),
+                    nome: document.getElementById('nome-cantiere').value.trim(),
+                    referente: document.getElementById('referente-cantiere').value.trim(),
+                    dataInizio: document.getElementById('inizio-appalto').value,
+                    dataFine: document.getElementById('fine-appalto').value,
+                    email: document.getElementById('email-notifica').value.trim(),
+                    password: document.getElementById('password-cantiere').value.trim()
+                };
+                await apiCall('POST','/api/admin/cantieri', dati);
+                await caricaDati();
+                f.reset();
+                alert('Cantiere creato. Per l’accesso S.A. comunica il codice cantiere e la password che hai impostato.');
+            } catch (err) { alert('Cantiere non salvato: ' + err.message); }
+        }
+
+        const dialogPasswordSA = document.getElementById('modale-password-sa');
+        let salvataggioPasswordSA = false;
+        let passwordSAOverflow = '';
+
+        function apriCambioPasswordSA(codice) {
+            const c = cantieri.find(x => x.id === codice);
+            if (!c || dialogPasswordSA.open) return;
+            document.getElementById('form-password-sa').reset();
+            nascondiPassword(dialogPasswordSA);
+            document.getElementById('password-sa-codice').value = codice;
+            document.getElementById('password-sa-cantiere').textContent = c.nome + ' (' + codice + ')';
+            const errore = document.getElementById('errore-password-sa');
+            errore.textContent = '';
+            errore.classList.add('hidden');
+            passwordSAOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            dialogPasswordSA.showModal();
+            document.getElementById('password-sa-nuova').focus();
+        }
+
+        function chiudiPasswordSA(forza = false) {
+            if (salvataggioPasswordSA && !forza) return;
+            if (dialogPasswordSA.open) dialogPasswordSA.close();
+        }
+
+        dialogPasswordSA.addEventListener('cancel', event => {
+            if (salvataggioPasswordSA) event.preventDefault();
+        });
+        dialogPasswordSA.addEventListener('close', () => {
+            const codice = document.getElementById('password-sa-codice').value;
+            document.getElementById('form-password-sa').reset();
+            nascondiPassword(dialogPasswordSA);
+            document.getElementById('errore-password-sa').textContent = '';
+            document.getElementById('errore-password-sa').classList.add('hidden');
+            document.body.style.overflow = passwordSAOverflow;
+            if (document.getElementById('accesso-amministratore').classList.contains('hidden')) {
+                const origine = [...document.querySelectorAll('[data-password-cantiere]')]
+                    .find(el => el.dataset.passwordCantiere === codice);
+                if (origine) origine.focus({preventScroll: true});
+            }
+        });
+
+        async function salvaPasswordSA(event) {
+            event.preventDefault();
+            if (salvataggioPasswordSA) return;
+            const codice = document.getElementById('password-sa-codice').value;
+            const password = document.getElementById('password-sa-nuova').value.trim();
+            const confermaPassword = document.getElementById('password-sa-conferma').value.trim();
+            const errore = document.getElementById('errore-password-sa');
+            errore.textContent = '';
+            errore.classList.add('hidden');
+            if (password.length < 8 || password.length > 128 || password !== confermaPassword) {
+                errore.textContent = password !== confermaPassword
+                    ? 'Le due password non coincidono.' : 'La password deve contenere da 8 a 128 caratteri.';
+                errore.classList.remove('hidden');
+                document.getElementById(password !== confermaPassword ? 'password-sa-conferma' : 'password-sa-nuova').focus();
+                return;
+            }
+            salvataggioPasswordSA = true;
+            document.getElementById('campi-password-sa').disabled = true;
+            document.getElementById('chiudi-password-sa').disabled = true;
+            document.getElementById('salva-password-sa').textContent = 'Salvataggio…';
+            try {
+                await apiCall('PUT', '/api/admin/cantieri/' + encodeURIComponent(codice) + '/password', {password, confermaPassword});
+                chiudiPasswordSA(true);
+                alert('Password S.A. aggiornata per il cantiere ' + codice + '.');
+            } catch (err) {
+                if (dialogPasswordSA.open) {
+                    errore.textContent = 'Password non modificata: ' + err.message;
+                    errore.classList.remove('hidden');
+                }
+            } finally {
+                salvataggioPasswordSA = false;
+                document.getElementById('campi-password-sa').disabled = false;
+                document.getElementById('chiudi-password-sa').disabled = false;
+                document.getElementById('salva-password-sa').textContent = 'Salva password';
+            }
+        }
+
+        function apriModaleModifica(idCantiere) {
+            const c = cantieri.find(x => x.id === idCantiere);
+            if (!c) return;
+            document.getElementById('edit-codice').value = c.id;
+            document.getElementById('edit-nome').value = c.nome;
+            document.getElementById('edit-referente').value = c.referente || '';
+            document.getElementById('edit-inizio').value = c.dataInizio;
+            document.getElementById('edit-fine').value = c.dataFine;
+            document.getElementById('edit-email').value = c.email;
+            document.getElementById('modale-modifica').classList.remove('hidden');
+        }
+
+        function chiudiModaleModifica() {
+            document.getElementById('modale-modifica').classList.add('hidden');
+        }
+
+        async function salvaModificaCantiere(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-codice').value;
+            const data = {
+                nome: document.getElementById('edit-nome').value.trim(),
+                referente: document.getElementById('edit-referente').value.trim(),
+                dataInizio: document.getElementById('edit-inizio').value,
+                dataFine: document.getElementById('edit-fine').value,
+                email: document.getElementById('edit-email').value.trim()
+            };
+            try {
+                await apiCall('PUT', '/api/admin/cantieri/'+encodeURIComponent(id), data);
+                await caricaDati();
+                chiudiModaleModifica();
+            } catch (err) { alert('Modifica non salvata: '+err.message); }
+        }
+
+        async function eliminaCantiere(idCantiere) {
+            const c = cantieri.find(c => c.id === idCantiere);
+            if (!c || !confirm(`Eliminare definitivamente il cantiere "${c.nome}"? Verranno eliminate anche tutte le segnalazioni collegate.`)) return;
+            try {
+                await apiCall('DELETE', '/api/admin/cantieri/'+encodeURIComponent(idCantiere));
+                if (cantiereSelezionatoId === idCantiere) naviga('home');
+                await caricaDati();
+            } catch (err) { alert(err.message); }
+        }
+
+        async function eliminaTicket(idTicket) {
+            if (!confirm(`Eliminare definitivamente la segnalazione ${idTicket}?`)) return;
+            try {
+                await apiCall('DELETE', '/api/admin/tickets/'+encodeURIComponent(idTicket));
+                await caricaDati();
+            } catch (err) { alert(err.message); }
+        }
+
+       let selectStatoAttivo = null; // Memorizza la select per ripristinarla se si annulla
+
+function apriModaleStato(idTicket, nuovoStato, vecchioStato, selectElement) {
+    if (nuovoStato === vecchioStato) return;
+    
+    selectStatoAttivo = { el: selectElement, vecchio: vecchioStato };
+
+    document.getElementById('stato-ticket-id').textContent = idTicket;
+    document.getElementById('stato-ticket-nuovo').textContent = nuovoStato;
+    document.getElementById('stato-ticket-valore').value = nuovoStato;
+    document.getElementById('messaggio-stato').value = '';
+
+    document.getElementById('modale-cambio-stato').classList.remove('hidden');
+}
+
+function chiudiModaleStato() {
+    if (selectStatoAttivo) {
+        selectStatoAttivo.el.value = selectStatoAttivo.vecchio; // Ripristina il valore visivo precedente
+        selectStatoAttivo = null;
+    }
+    document.getElementById('modale-cambio-stato').classList.add('hidden');
+}
+
+async function confermaCambioStato(e) {
+    e.preventDefault();
+    const idTicket = document.getElementById('stato-ticket-id').textContent;
+    const nuovoStato = document.getElementById('stato-ticket-valore').value;
+    const messaggio = document.getElementById('messaggio-stato').value.trim();
+    const btn = document.getElementById('btn-salva-stato');
+
+    btn.disabled = true;
+    btn.textContent = 'Invio in corso...';
+
+    try {
+        await apiCall('PUT', '/api/admin/tickets/' + encodeURIComponent(idTicket), { 
+            stato: nuovoStato, 
+            messaggio: messaggio 
+        });
+        document.getElementById('modale-cambio-stato').classList.add('hidden');
+        selectStatoAttivo = null;
+        await caricaDati();
+    } catch(err) { 
+        alert('Errore durante il salvataggio: ' + err.message); 
+        await caricaDati(true); 
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Invia Notifica e Salva';
+    }
+}
+
+        function aggiornaFiltroCantieri() {
+            const select = document.getElementById('filtro-cantiere-segnalazioni');
+            const valoreAttuale = select.value;
+            select.innerHTML = '<option value="TUTTI">Tutti i cantieri</option>';
+            cantieri.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${esc(c.nome)} (${c.id})</option>`;
+            });
+            select.value = cantieri.some(c => c.id === valoreAttuale) ? valoreAttuale : 'TUTTI';
+        }
+
+        function aggiornaBoxKPI(listaTickets, prefissoId) {
+            document.getElementById(`${prefissoId}-totale`).innerText = listaTickets.length;
+            document.getElementById(`${prefissoId}-aperte`).innerText = listaTickets.filter(t => t.stato === 'Aperto').length;
+            document.getElementById(`${prefissoId}-lavorazione`).innerText = listaTickets.filter(t => t.stato === 'In Lavorazione').length;
+            document.getElementById(`${prefissoId}-risolte`).innerText = listaTickets.filter(t => t.stato === 'Risolto').length;
+        }
+
+        function renderDettaglioCantiere() {
+            const c = cantieri.find(x => x.id === cantiereSelezionatoId);
+            if (!c) return naviga('home');
+
+            document.getElementById('dettaglio-titolo').innerText = c.nome;
+            document.getElementById('dettaglio-codice').innerText = c.id;
+            document.getElementById('dettaglio-info').innerText = `Referente: ${c.referente || '-'}  |  Inizio Appalto: ${formattaData(c.dataInizio)}  |  Fine Appalto: ${formattaData(c.dataFine)}  |  Email: ${c.email}`;
+
+            const ticketsCantiere = tickets.filter(t => t.cantiereId === c.id);
+            aggiornaBoxKPI(ticketsCantiere, 'kpi-det');
+
+            const tbody = document.getElementById('tabella-tickets-dettaglio');
+            tbody.innerHTML = '';
+
+            if (ticketsCantiere.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Nessuna segnalazione registrata per questo cantiere.</td></tr>`;
+                return;
+            }
+
+            ticketsCantiere.forEach(t => {
+                tbody.innerHTML += `
+                    <tr class="border-b ticket-row" data-ticket-id="${esc(t.id)}">
+                        <td class="p-3 font-mono text-xs"><button type="button" class="ticket-open" data-apri-ticket="${esc(t.id)}" aria-haspopup="dialog" aria-controls="dettaglio-ticket" aria-label="Apri dettaglio segnalazione ${esc(t.id)}">${esc(t.id)}</button></td>
+                        <td class="p-3 whitespace-nowrap">${formattaData(t.data)}</td>
+                        <td class="p-3">
+                            <div class="font-medium">${esc(t.segnalatore)}</div>
+                            <div class="text-xs text-blue-600 font-mono">${esc(t.contatto || '-')}</div>
+                        </td>
+                        <td class="p-3"><div>${esc(t.tipologia)}</div><span class="text-xs font-bold ${t.gravita === 'Critica' || t.gravita === 'Alta' ? 'text-red-600' : 'text-slate-600'}">${t.gravita}</span></td>
+                        <td class="p-3 ticket-description-cell">
+                            <div class="ticket-preview">${esc(anteprimaTicket(t.descrizione, 160))}</div>
+                            <div class="ticket-place text-xs text-slate-500 mt-1">📍 ${esc(anteprimaTicket(t.luogo, 60))}</div>
+                            <span class="text-xs text-indigo-600 font-semibold mt-1 block">Apri dettaglio →</span>
+                        </td>
+                        <td class="p-3">
+                            <select onchange="apriModaleStato('${t.id}', this.value, '${t.stato}', this)" class="border rounded p-1 text-xs font-semibold bg-white">
+                                <option value="Aperto" ${t.stato === 'Aperto' ? 'selected' : ''}>🔴 Aperta</option>
+                                <option value="In Lavorazione" ${t.stato === 'In Lavorazione' ? 'selected' : ''}>🟡 In Lavorazione</option>
+                                <option value="Risolto" ${t.stato === 'Risolto' ? 'selected' : ''}>🟢 Risolta / Chiusa</option>
+                            </select>
+                        </td>
+                        <td class="p-3 text-right">
+                            <button onclick="eliminaTicket('${t.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">✕</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+
+        // Anteprima nell'elenco; il testo completo resta nell'archivio e nei report.
+        function anteprimaTicket(value, limite) {
+            const testo = String(value ?? '').replace(/\s+/g, ' ').trim();
+            return testo ? (testo.length > limite ? testo.slice(0, limite).trimEnd() + '…' : testo) : '—';
+        }
+
+        let ticketDettaglioId = null;
+        let ticketTabellaOrigine = null;
+        let ticketBodyOverflow = '';
+        const dialogTicket = document.getElementById('dettaglio-ticket');
+
+        function aggiornaDettaglioTicket() {
+            if (!ticketDettaglioId) return;
+            const t = tickets.find(x => x.id === ticketDettaglioId);
+            if (!t) { chiudiDettaglioTicket(); return; }
+            const c = cantieri.find(x => x.id === t.cantiereId);
+            const stati = { Aperto: 'Aperta', 'In Lavorazione': 'In lavorazione', Risolto: 'Risolta / Chiusa' };
+            const campi = {
+                title: 'Segnalazione ' + t.id,
+                cantiere: c ? c.nome + ' (' + c.id + ')' : t.cantiereId,
+                data: formattaData(t.data), referente: c?.referente,
+                stato: stati[t.stato] || t.stato, segnalatore: t.segnalatore,
+                contatto: t.contatto, categoria: t.tipologia, gravita: t.gravita,
+                luogo: t.luogo, descrizione: t.descrizione, richiesta: t.richiesta
+            };
+            // textContent conserva a capo e caratteri speciali senza interpretare HTML.
+            Object.entries(campi).forEach(([nome, valore]) => {
+                const el = document.getElementById('ticket-modal-' + nome);
+                const testo = valore == null || valore === '' ? '—' : String(valore);
+                if (el.textContent !== testo) el.textContent = testo;
+            });
+        }
+
+        function apriDettaglioTicket(id, tabellaId) {
+            if (!tickets.some(t => t.id === id)) return;
+            ticketDettaglioId = id;
+            ticketTabellaOrigine = tabellaId;
+            aggiornaDettaglioTicket();
+            if (!dialogTicket.open) {
+                ticketBodyOverflow = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+                dialogTicket.showModal();
+            }
+            document.getElementById('ticket-modal-body').scrollTop = 0;
+        }
+
+        // Copia completa dedicata alla stampa: nessun limite di altezza del popup.
+        function preparaStampaDettaglioTicket() {
+            if (!dialogTicket.open || !ticketDettaglioId) return false;
+            document.getElementById('ticket-print-area')?.remove();
+            const area = document.createElement('article');
+            area.id = 'ticket-print-area';
+            area.setAttribute('aria-hidden', 'true');
+            ['.ticket-modal-header', '.ticket-modal-body'].forEach(selettore => {
+                const copia = dialogTicket.querySelector(selettore).cloneNode(true);
+                copia.removeAttribute('id');
+                copia.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                copia.querySelectorAll('button').forEach(el => el.remove());
+                area.appendChild(copia);
+            });
+            document.body.appendChild(area);
+            document.body.classList.add('ticket-printing');
+            return true;
+        }
+
+        function terminaStampaDettaglioTicket() {
+            document.body.classList.remove('ticket-printing');
+            document.getElementById('ticket-print-area')?.remove();
+        }
+
+        function stampaDettaglioTicket() {
+            if (!preparaStampaDettaglioTicket()) return;
+            try {
+                window.print();
+            } catch (err) {
+                terminaStampaDettaglioTicket();
+                alert('Impossibile aprire la stampa: ' + err.message);
+            }
+        }
+
+        window.addEventListener('beforeprint', preparaStampaDettaglioTicket);
+        window.addEventListener('afterprint', terminaStampaDettaglioTicket);
+
+        function chiudiDettaglioTicket() {
+            if (dialogTicket.open) dialogTicket.close();
+        }
+
+        dialogTicket.addEventListener('close', () => {
+            terminaStampaDettaglioTicket();
+            document.body.style.overflow = ticketBodyOverflow;
+            // La sincronizzazione può aver ricreato la riga: ritrova il pulsante attuale.
+            const tabella = document.getElementById(ticketTabellaOrigine);
+            const pulsante = tabella && [...tabella.querySelectorAll('[data-apri-ticket]')]
+                .find(el => el.dataset.apriTicket === ticketDettaglioId);
+            if (document.getElementById('accesso-amministratore').classList.contains('hidden')) {
+                (pulsante || document.getElementById('nav-segnalazioni')).focus({preventScroll: true});
+            }
+            ticketDettaglioId = null;
+            ticketTabellaOrigine = null;
+        });
+
+        // Chiude solo cliccando sullo sfondo esterno, non selezionando il testo.
+        let ticketClickSfondo = false;
+        function esternoDettaglioTicket(event) {
+            const r = dialogTicket.getBoundingClientRect();
+            return event.target === dialogTicket && (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom);
+        }
+        dialogTicket.addEventListener('pointerdown', event => { ticketClickSfondo = esternoDettaglioTicket(event); });
+        dialogTicket.addEventListener('click', event => {
+            if (ticketClickSfondo && esternoDettaglioTicket(event)) chiudiDettaglioTicket();
+            ticketClickSfondo = false;
+        });
+
+        ['tabella-tickets-globale', 'tabella-tickets-dettaglio'].forEach(tabellaId => {
+            document.getElementById(tabellaId).addEventListener('click', event => {
+                const pulsante = event.target.closest('[data-apri-ticket]');
+                if (pulsante) { apriDettaglioTicket(pulsante.dataset.apriTicket, tabellaId); return; }
+                if (event.target.closest('button, select, option, a, input, textarea, label')) return;
+                if (window.getSelection()?.toString()) return;
+                const riga = event.target.closest('[data-ticket-id]');
+                if (riga) apriDettaglioTicket(riga.dataset.ticketId, tabellaId);
+            });
+        });
+
+        // ==========================================
+        // ESPORTAZIONE REPORT CSV
+        // ==========================================
+        function esportaCSVSegnalazioni() {
+            const statoSel = document.getElementById('filtro-stato-segnalazioni').value;
+            const cantiereSel = document.getElementById('filtro-cantiere-segnalazioni').value;
+
+            const dati = tickets.filter(t => {
+                const matchStato = statoSel === 'TUTTI' || t.stato === statoSel;
+                const matchCantiere = cantiereSel === 'TUTTI' || t.cantiereId === cantiereSel;
+                return matchStato && matchCantiere;
+            });
+
+            generaDownloadCSV(dati, `Report_Segnalazioni_${statoSel}_${cantiereSel}`);
+        }
+
+        function esportaCSVCantiereSingolo(idCantiere) {
+            const dati = tickets.filter(t => t.cantiereId === idCantiere);
+            generaDownloadCSV(dati, `Report_Cantiere_${idCantiere}`);
+        }
+
+        function csvCell(v) {
+            let s = String(v ?? '').replace(/\r?\n/g, ' ');
+            if (/^[=+@\-\t\r]/.test(s)) s = "'" + s; // Protezione formule in Excel
+            return '"' + s.replace(/"/g, '""') + '"';
+        }
+        function generaDownloadCSV(dati, prefissoNome) {
+            if (!dati.length) return alert('Nessun dato da esportare.');
+            const campi = ['ID', 'Data rilevamento','Data ricezione','Codice Cantiere','Nome Cantiere','Nome Referente','Inizio Appalto','Fine Appalto','Segnalatore','Email Segnalatore','Categoria','Gravità','Luogo','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura'];
+            let righe = [campi];
+            dati.forEach(t => {
+                const c = cantieri.find(x => x.id === t.cantiereId) || {};
+                righe.push([t.id, formattaData(t.data), t.creatoIl, t.cantiereId, c.nome, c.referente, formattaData(c.dataInizio),formattaData(c.dataFine),t.segnalatore,t.contatto,t.tipologia,t.gravita,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]);
+            });
+            const csv = '\uFEFF' + righe.map(row=>row.map(csvCell).join(';')).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+            const link = document.createElement('a'); link.href = url;
+            link.download = `${prefissoNome}_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click(); setTimeout(()=>URL.revokeObjectURL(url), 2000);
+        }
+
+        function formattaData(d) {
+            if (!d) return "-";
+            const [a, m, g] = d.split('-');
+            return `${g}/${m}/${a}`;
+        }
+
+        // Occhietto disponibile per ogni campo password della pagina.
+        function impostaVisibilitaPassword(campo, visibile) {
+            campo.type = visibile ? 'text' : 'password';
+            const pulsante = campo.parentElement.querySelector('.password-toggle');
+            if (!pulsante) return;
+            const etichetta = visibile ? 'Nascondi password' : 'Mostra password';
+            pulsante.setAttribute('aria-label', etichetta);
+            pulsante.setAttribute('aria-pressed', String(visibile));
+            pulsante.title = etichetta;
+        }
+
+        function nascondiPassword(contenitore = document) {
+            contenitore.querySelectorAll('[data-password-toggle]').forEach(campo => {
+                impostaVisibilitaPassword(campo, false);
+            });
+        }
+
+        function inizializzaOcchiettiPassword() {
+            document.querySelectorAll('input[type="password"]').forEach(campo => {
+                if (campo.hasAttribute('data-password-toggle')) return;
+                campo.setAttribute('data-password-toggle', '');
+                const contenitore = document.createElement('div');
+                contenitore.className = 'password-field';
+                campo.before(contenitore);
+                contenitore.appendChild(campo);
+                const pulsante = document.createElement('button');
+                pulsante.type = 'button';
+                pulsante.className = 'password-toggle';
+                pulsante.setAttribute('aria-controls', campo.id);
+                pulsante.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="password-eye-slash" d="m3 3 18 18"/></svg>';
+                pulsante.addEventListener('click', () => {
+                    const inizio = campo.selectionStart;
+                    const fine = campo.selectionEnd;
+                    impostaVisibilitaPassword(campo, campo.type === 'password');
+                    campo.focus({preventScroll: true});
+                    if (inizio !== null && fine !== null) campo.setSelectionRange(inizio, fine);
+                });
+                contenitore.appendChild(pulsante);
+                impostaVisibilitaPassword(campo, false);
+            });
+        }
+
+        // Dopo invio, annullamento o ritorno alla pagina, i campi tornano nascosti.
+        document.addEventListener('submit', event => nascondiPassword(event.target), true);
+        document.addEventListener('reset', event => nascondiPassword(event.target), true);
+        window.addEventListener('pageshow', () => nascondiPassword());
+        inizializzaOcchiettiPassword();
+    </script>
+    <!-- ======================================================= -->
+<!-- MODALE CAMBIO STATO CON NOTIFICA TESTUALE               -->
+<!-- ======================================================= -->
+<div id="modale-cambio-stato" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6 space-y-4">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 class="text-lg font-bold text-slate-800">📩 Notifica Cambio Stato</h3>
+            <button onclick="chiudiModaleStato()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        </div>
+        <form onsubmit="confermaCambioStato(event)" class="space-y-4">
+            <p class="text-sm text-slate-600">Stai aggiornando la segnalazione <span id="stato-ticket-id" class="font-bold"></span> in <span id="stato-ticket-nuovo" class="font-bold text-indigo-600"></span>.</p>
+            
+            <input type="hidden" id="stato-ticket-valore">
+
+            <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Messaggio per la Stazione Appaltante *</label>
+                <textarea id="messaggio-stato" rows="4" required placeholder="Inserisci i dettagli sull'intervento, tempistiche o motivazioni dell'aggiornamento..." class="w-full border p-2 rounded text-sm"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onclick="chiudiModaleStato()" class="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 rounded font-semibold text-slate-700">Annulla</button>
+                <button type="submit" id="btn-salva-stato" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold">Invia Notifica e Salva</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
