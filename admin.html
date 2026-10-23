@@ -300,7 +300,6 @@
                                 <th class="p-3 text-left border-b">Data</th>
                                 <th class="p-3 text-left border-b">Cantiere & Referente</th>
                                 <th class="p-3 text-left border-b">Segnalatore & Contatto</th>
-                                <th class="p-3 text-left border-b">Categoria & Gravità</th>
                                 <th class="p-3 text-left border-b">Descrizione</th>
                                 <th class="p-3 text-left border-b">Stato Lavorazione</th>
                                 <th class="p-3 text-right border-b">Elimina</th>
@@ -395,7 +394,6 @@
                                 <th class="p-3 text-left border-b">ID</th>
                                 <th class="p-3 text-left border-b">Data</th>
                                 <th class="p-3 text-left border-b">Segnalatore & Contatto</th>
-                                <th class="p-3 text-left border-b">Categoria & Gravità</th>
                                 <th class="p-3 text-left border-b">Descrizione</th>
                                 <th class="p-3 text-left border-b">Stato Lavorazione</th>
                                 <th class="p-3 text-right border-b">Elimina</th>
@@ -502,10 +500,8 @@
                 <div><dt>Stato di lavorazione</dt><dd id="ticket-modal-stato"></dd></div>
                 <div><dt>Segnalatore</dt><dd id="ticket-modal-segnalatore"></dd></div>
                 <div><dt>Contatto del segnalatore</dt><dd id="ticket-modal-contatto"></dd></div>
-                <div><dt>Categoria</dt><dd id="ticket-modal-categoria"></dd></div>
-                <div><dt>Gravità</dt><dd id="ticket-modal-gravita"></dd></div>
             </dl>
-            <section class="ticket-modal-section"><h3>Luogo della non conformità</h3><p id="ticket-modal-luogo" class="ticket-full-text"></p></section>
+            <section class="ticket-modal-section"><h3>Area della non conformità</h3><p id="ticket-modal-luogo" class="ticket-full-text"></p></section>
             <section class="ticket-modal-section"><h3>Descrizione completa</h3><p id="ticket-modal-descrizione" class="ticket-full-text"></p></section>
             <section class="ticket-modal-section"><h3>Intervento richiesto</h3><p id="ticket-modal-richiesta" class="ticket-full-text"></p></section>
         </div>
@@ -770,7 +766,7 @@
             tbody.innerHTML = '';
 
             if (filtrati.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">Nessuna segnalazione trovata per i filtri selezionati.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Nessuna segnalazione trovata per i filtri selezionati.</td></tr>`;
                 return;
             }
 
@@ -788,10 +784,9 @@
                             <div class="font-medium">${esc(t.segnalatore)}</div>
                             <div class="text-xs text-blue-600 font-mono">${esc(t.contatto || '-')}</div>
                         </td>
-                        <td class="p-3"><div>${esc(t.tipologia)}</div><span class="text-xs font-bold ${t.gravita === 'Critica' || t.gravita === 'Alta' ? 'text-red-600' : 'text-slate-600'}">${t.gravita}</span></td>
                         <td class="p-3 ticket-description-cell">
                             <div class="ticket-preview">${esc(anteprimaTicket(t.descrizione, 160))}</div>
-                            <div class="ticket-place text-xs text-slate-500 mt-1">📍 ${esc(anteprimaTicket(t.luogo, 60))}</div>
+                            <div class="ticket-place text-xs text-slate-500 mt-1">Area: ${esc(anteprimaTicket(t.luogo, 60))}</div>
                             <span class="text-xs text-indigo-600 font-semibold mt-1 block">Apri dettaglio →</span>
                         </td>
                         <td class="p-3">
@@ -1092,7 +1087,7 @@ async function confermaCambioStato(e) {
             tbody.innerHTML = '';
 
             if (ticketsCantiere.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Nessuna segnalazione registrata per questo cantiere.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Nessuna segnalazione registrata per questo cantiere.</td></tr>`;
                 return;
             }
 
@@ -1105,10 +1100,9 @@ async function confermaCambioStato(e) {
                             <div class="font-medium">${esc(t.segnalatore)}</div>
                             <div class="text-xs text-blue-600 font-mono">${esc(t.contatto || '-')}</div>
                         </td>
-                        <td class="p-3"><div>${esc(t.tipologia)}</div><span class="text-xs font-bold ${t.gravita === 'Critica' || t.gravita === 'Alta' ? 'text-red-600' : 'text-slate-600'}">${t.gravita}</span></td>
                         <td class="p-3 ticket-description-cell">
                             <div class="ticket-preview">${esc(anteprimaTicket(t.descrizione, 160))}</div>
-                            <div class="ticket-place text-xs text-slate-500 mt-1">📍 ${esc(anteprimaTicket(t.luogo, 60))}</div>
+                            <div class="ticket-place text-xs text-slate-500 mt-1">Area: ${esc(anteprimaTicket(t.luogo, 60))}</div>
                             <span class="text-xs text-indigo-600 font-semibold mt-1 block">Apri dettaglio →</span>
                         </td>
                         <td class="p-3">
@@ -1149,7 +1143,7 @@ async function confermaCambioStato(e) {
                 cantiere: c ? c.nome + ' (' + c.id + ')' : t.cantiereId,
                 data: formattaData(t.data), referente: c?.referente,
                 stato: stati[t.stato] || t.stato, segnalatore: t.segnalatore,
-                contatto: t.contatto, categoria: t.tipologia, gravita: t.gravita,
+                contatto: t.contatto,
                 luogo: t.luogo, descrizione: t.descrizione, richiesta: t.richiesta
             };
             // textContent conserva a capo e caratteri speciali senza interpretare HTML.
@@ -1279,11 +1273,11 @@ async function confermaCambioStato(e) {
         }
         function generaDownloadCSV(dati, prefissoNome) {
             if (!dati.length) return alert('Nessun dato da esportare.');
-            const campi = ['ID', 'Data rilevamento','Data ricezione','Codice Cantiere','Nome Cantiere','Nome Referente','Inizio Appalto','Fine Appalto','Segnalatore','Email Segnalatore','Categoria','Gravità','Luogo','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura'];
+            const campi = ['ID', 'Data rilevamento','Data ricezione','Codice Cantiere','Nome Cantiere','Nome Referente','Inizio Appalto','Fine Appalto','Segnalatore','Email Segnalatore','Area della non conformità','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura'];
             let righe = [campi];
             dati.forEach(t => {
                 const c = cantieri.find(x => x.id === t.cantiereId) || {};
-                righe.push([t.id, formattaData(t.data), t.creatoIl, t.cantiereId, c.nome, c.referente, formattaData(c.dataInizio),formattaData(c.dataFine),t.segnalatore,t.contatto,t.tipologia,t.gravita,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]);
+                righe.push([t.id, formattaData(t.data), t.creatoIl, t.cantiereId, c.nome, c.referente, formattaData(c.dataInizio),formattaData(c.dataFine),t.segnalatore,t.contatto,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]);
             });
             const csv = '\uFEFF' + righe.map(row=>row.map(csvCell).join(';')).join('\r\n');
             const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
