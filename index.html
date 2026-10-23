@@ -368,7 +368,7 @@
         function scaricaReportSA() {
             const lista = ottieniTicketsFiltrati();
             if (!lista.length) return alert('Nessuna segnalazione da esportare.');
-            const righe = [['ID','Data rilevamento','Data ricezione','Cantiere','Referente','Segnalatore','Email Segnalatore','Categoria','Gravità','Luogo','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura']];
+            const righe = [['ID','Data rilevamento','Data ricezione','Cantiere','Referente','Segnalatore','Email Segnalatore','Luogo','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura']];
             lista.forEach(t => righe.push([t.id,formattaData(t.data),t.creatoIl,cantiereLoggato.nome,cantiereLoggato.referente,t.segnalatore,t.contatto,t.tipologia,t.gravita,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]));
             const csv = '\uFEFF' + righe.map(row => row.map(csvCell).join(';')).join('\r\n');
             const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
