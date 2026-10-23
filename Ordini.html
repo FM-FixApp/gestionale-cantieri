@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-title" content="FMFixApp">
+<meta name="theme-color" content="#1e3a8a">
+<title>FMFixApp · Richiesta prodotti</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f5f9;color:#1e293b;font:16px/1.5 Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}[hidden]{display:none!important}header{background:#1e3a8a;color:#fff;padding:22px 24px}header>div{max-width:940px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-weight:700;font-size:21px}.subtitle{font-size:13px;color:#dbeafe}.account{text-align:right;font-size:13px}.account button{margin-left:14px;background:transparent;border:1px solid #93c5fd;color:white;border-radius:7px;padding:7px 12px}main{max-width:940px;margin:36px auto;padding:0 20px 50px}.card{background:#fff;border:1px solid #dbe3ec;border-radius:14px;padding:30px;box-shadow:0 3px 12px #0f172a05}.login{max-width:430px;margin:8vh auto}h1{font-size:25px;margin:0 0 7px}h2{font-size:17px;margin:0}p{margin:0 0 22px}.muted{color:#64748b;font-size:14px}label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}input,select,textarea{border:1px solid #cbd5e1;border-radius:7px;background:#fff;padding:11px 12px;width:100%;min-height:46px;color:#1e293b}input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid #bfdbfe;outline-offset:2px}textarea{resize:vertical}fieldset{border:0;padding:0;margin:0;min-width:0}fieldset:disabled input,fieldset:disabled select,fieldset:disabled textarea{background:#f8fafc}.field{margin-bottom:20px}.grid{display:grid;grid-template-columns:1fr 2fr;gap:20px}.primary{border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;border-radius:8px;padding:12px 22px;font-weight:700}.secondary{border:1px solid #cbd5e1;background:#fff;color:#1e40af;border-radius:8px;padding:10px 16px;font-weight:700}.full{width:100%}.section{border-top:1px solid #e2e8f0;padding-top:22px;margin-top:6px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:17px}.product-row{display:grid;grid-template-columns:minmax(0,1fr) 120px 44px;gap:14px;align-items:end;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;margin-bottom:12px}.remove{width:44px;height:46px;background:white;border:1px solid #cbd5e1;border-radius:7px;color:#b91c1c;font-size:22px}.row-label{font-size:13px}.submitbar{display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid #e2e8f0;padding-top:22px;margin-top:22px}.submitbar .muted{margin:0}.message{border-radius:8px;padding:13px 16px;margin:16px 0;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;white-space:pre-wrap}.success{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}.pw{position:relative}.pw input{padding-right:56px}.pw button{position:absolute;right:5px;top:5px;width:38px;height:36px;border:0;background:#f8fafc;color:#475569;border-radius:5px}.pw svg{width:21px;height:21px;vertical-align:middle}footer{text-align:center;color:#64748b;font-size:12px;margin-top:22px}.summary{width:100%;border-collapse:collapse;margin:18px 0}.summary th,.summary td{text-align:left;border-bottom:1px solid #e2e8f0;padding:10px}.wrap{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:600px){header{padding:16px}.card{padding:21px}main{padding:0 12px;margin-top:22px}.grid{grid-template-columns:1fr;gap:0}.product-row{grid-template-columns:minmax(0,1fr) 82px 36px;gap:8px;padding:12px}.remove{width:36px}.product-row select{padding:10px 6px}.sectionhead,.submitbar{align-items:stretch;flex-direction:column}.submitbar button{width:100%}.account button{margin-left:5px}h1{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div><div><div class="brand">FMFixApp</div><div class="subtitle">Ufficio Acquisti · Richiesta prodotti</div></div><div id="account" class="account" hidden><span id="account-nome"></span><button type="button" id="esci">Esci</button></div></div></header>
+<main>
+<section id="login" class="card login">
+  <h1>Accesso ordini</h1><p class="muted">Inserisci le credenziali ricevute dall’azienda.</p>
+  <form id="login-form">
+    <div class="field"><label for="username">Nome utente</label><input id="username" required maxlength="40" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+    <div class="field"><label for="password">Password</label><div class="pw"><input id="password" type="password" required maxlength="128" autocomplete="current-password"><button type="button" id="mostra-password" aria-label="Mostra password" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+    <div id="login-error" class="message" role="alert" hidden></div>
+    <button id="login-submit" class="primary full" type="submit">Accedi</button>
+  </form>
+</section>
+<section id="richiesta" class="card" hidden>
+  <h1>Nuovo ordine</h1><p class="muted">Seleziona i prodotti e indica la quantità per ciascuno. I campi con * sono obbligatori.</p>
+  <form id="order-form">
+    <fieldset id="order-fields">
+      <div class="grid"><div class="field"><label for="data">Data *</label><input id="data" type="date" required></div><div class="field"><label for="operatore">Nome operatore *</label><input id="operatore" required maxlength="200" autocomplete="name"></div></div>
+      <div class="field"><label for="sede">Sede *</label><input id="sede" required maxlength="300" placeholder="Indica la sede per la quale richiedi i prodotti"></div>
+      <div class="section"><div class="sectionhead"><h2>Prodotti richiesti *</h2><button type="button" class="secondary" id="aggiorna-catalogo">Aggiorna elenco prodotti</button></div><div id="righe-prodotti"></div><button type="button" class="secondary" id="aggiungi-prodotto">+ Aggiungi prodotto</button><p id="catalogo-vuoto" class="message" hidden>Nessun prodotto disponibile. Contatta l’Ufficio Acquisti.</p></div>
+      <div class="field section" style="margin-top:24px"><label for="note">Note aggiuntive</label><textarea id="note" rows="4" maxlength="5000" placeholder="Eventuali indicazioni utili per l’ordine"></textarea></div>
+    </fieldset>
+    <div id="order-message" class="message" role="alert" hidden></div>
+    <div class="submitbar"><p class="muted" id="conteggio">1 prodotto nell’ordine</p><button type="submit" id="invia-ordine" class="primary">Invia ordine</button></div>
+  </form>
+</section>
+<section id="ricevuta" class="card" hidden><h1>Ordine inviato</h1><p class="message success" id="conferma" role="status"></p><div id="riepilogo"></div><button type="button" class="primary" id="nuovo-ordine">Nuovo ordine</button></section>
+<footer>FMFixApp · La Holding S.r.l.</footer>
+</main>
+<script>
+'use strict';
+// Stesso indirizzo Web App del Gestionale; aggiornare qui solo se cambia la distribuzione.
+const API_URL = 'https://script.google.com/macros/s/AKfycbyX8jGaJU4CPejihMOHqGQ_TdC19DY34rQiYMCYbp_IuIG2GaoqCHBT-ALeoATqlSUE/exec';
+const $ = id => document.getElementById(id);
+const escapeHtml = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let token = sessionStorage.getItem('fmfix_ordini_token') || '';
+let utente = null, catalogo = [], pending = null, serial = 0, busy = false;
+async function api(method,path,payload={}) {
+  let response, result;
+  try {
+    response = await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({method,path,payload,token})});
+    if (!response.ok) throw new Error('HTTP '+response.status);
+    result = await response.json();
+  } catch(error) { const e = new Error('Connessione non riuscita. Riprova tra poco.'); e.incerto=true; throw e; }
+  if (!result.success) {
+    const error = new Error(result.error || 'Operazione non riuscita.');
+    if (error.message.includes('SESSIONE_SCADUTA')) logoutLocale();
+    throw error;
+  }
+  return result.data;
+}
+function messaggio(id,text) {$(id).textContent=text;$(id).hidden=!text;}
+function oggi(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
+function mostraPassword(show){$('password').type=show?'text':'password';$('mostra-password').setAttribute('aria-pressed',String(show));$('mostra-password').setAttribute('aria-label',show?'Nascondi password':'Mostra password');}
+$('mostra-password').addEventListener('click',()=>mostraPassword($('password').type==='password'));
+function logoutLocale(){token='';utente=null;sessionStorage.removeItem('fmfix_ordini_token');$('login').hidden=false;$('account').hidden=true;$('richiesta').hidden=true;$('ricevuta').hidden=true;mostraPassword(false);$('password').value='';}
+$('esci').addEventListener('click',async()=>{if(busy)return;try{await api('POST','/api/ordini/logout');}catch{}logoutLocale();});
+async function caricaCatalogo(){const r=await api('GET','/api/ordini/catalogo');utente=r.utente;catalogo=r.prodotti;return r;}
+function pendingKey(){return 'fmfix_ordini_invio_'+utente.id;}
+function salvaPending(){if(pending)sessionStorage.setItem(pendingKey(),JSON.stringify(pending));else sessionStorage.removeItem(pendingKey());}
+function righe(){return Array.from($('righe-prodotti').children);}
+function sincronizzaRighe(){
+  const rows=righe();const selezionati=rows.map(r=>r.querySelector('[data-prodotto]').value);
+  rows.forEach((r,i)=>{r.querySelector('.row-label').textContent='Prodotto '+(i+1)+' *';r.querySelector('[data-remove]').disabled=rows.length===1;r.querySelector('[data-remove]').setAttribute('aria-label','Rimuovi prodotto '+(i+1));for(const op of r.querySelector('[data-prodotto]').options)op.disabled=!!op.value&&op.value!==selezionati[i]&&selezionati.includes(op.value);});
+  $('conteggio').textContent=rows.length+(rows.length===1?' prodotto nell’ordine':' prodotti nell’ordine');
+  $('aggiungi-prodotto').disabled=!catalogo.length||rows.length>=Math.min(catalogo.length,100);
+  $('catalogo-vuoto').hidden=catalogo.length>0;
+  $('invia-ordine').disabled=busy||(!catalogo.length&&!pending);
+}
+function aggiungiRiga(id='',quantita=1){
+  serial++;const n=serial;const row=document.createElement('div');row.className='product-row';
+  row.innerHTML='<div><label class="row-label" for="prodotto-'+n+'">Prodotto *</label><select id="prodotto-'+n+'" data-prodotto required><option value="">Seleziona prodotto…</option>'+catalogo.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.nome)+'</option>').join('')+'</select></div><div><label for="quantita-'+n+'">Quantità *</label><select id="quantita-'+n+'" data-quantita required>'+Array.from({length:10},(_,i)=>'<option value="'+(i+1)+'">'+(i+1)+'</option>').join('')+'</select></div><button type="button" class="remove" data-remove aria-label="Rimuovi prodotto">×</button>';
+  const select=row.querySelector('[data-prodotto]');
+  if(id&&!catalogo.some(p=>p.id===id)){const op=document.createElement('option');op.value=id;op.textContent='Prodotto del precedente invio';select.add(op);}
+  select.value=id;row.querySelector('[data-quantita]').value=String(quantita);
+  select.addEventListener('change',sincronizzaRighe);row.querySelector('[data-remove]').addEventListener('click',()=>{row.remove();sincronizzaRighe();});
+  $('righe-prodotti').appendChild(row);sincronizzaRighe();
+}
+function impostaForm(d){$('data').value=d.data;$('operatore').value=d.operatore;$('sede').value=d.sede;$('note').value=d.note;$('righe-prodotti').replaceChildren();(d.prodotti.length?d.prodotti:[{id:'',quantita:1}]).forEach(r=>aggiungiRiga(r.id,r.quantita));}
+function nuovoOrdine(){pending=null;salvaPending();$('order-fields').disabled=false;$('order-form').reset();impostaForm({data:oggi(),operatore:utente.nome,sede:'',note:'',prodotti:[]});messaggio('order-message','');$('invia-ordine').textContent='Invia ordine';$('ricevuta').hidden=true;$('richiesta').hidden=false;}
+async function apriArea(){
+  await caricaCatalogo();$('login').hidden=true;$('account').hidden=false;$('account-nome').textContent=utente.nome;$('richiesta').hidden=false;$('ricevuta').hidden=true;
+  try{pending=JSON.parse(sessionStorage.getItem(pendingKey())||'null');}catch{pending=null;}
+  if(pending){impostaForm(pending);$('order-fields').disabled=true;$('invia-ordine').textContent='Verifica / riprova invio';messaggio('order-message','Un invio precedente è in attesa di conferma. Premi “Verifica / riprova invio” per recuperare l’esito senza duplicare l’ordine.');}
+  else nuovoOrdine();
+}
+$('login-form').addEventListener('submit',async e=>{e.preventDefault();$('login-submit').disabled=true;messaggio('login-error','');mostraPassword(false);try{const r=await api('POST','/api/ordini/login',{username:$('username').value.trim(),password:$('password').value});token=r.token;sessionStorage.setItem('fmfix_ordini_token',token);$('password').value='';await apriArea();}catch(err){messaggio('login-error',err.message);}finally{$('login-submit').disabled=false;}});
+$('aggiungi-prodotto').addEventListener('click',()=>{aggiungiRiga();righe().at(-1).querySelector('select').focus();});
+$('aggiorna-catalogo').addEventListener('click',async()=>{const keep=righe().map(r=>({id:r.querySelector('[data-prodotto]').value,quantita:Number(r.querySelector('[data-quantita]').value)}));$('aggiorna-catalogo').disabled=true;try{await caricaCatalogo();$('righe-prodotti').replaceChildren();keep.forEach(r=>aggiungiRiga(catalogo.some(p=>p.id===r.id)?r.id:'',r.quantita));messaggio('order-message','');}catch(err){messaggio('order-message',err.message);}finally{$('aggiorna-catalogo').disabled=false;}});
+$('nuovo-ordine').addEventListener('click',nuovoOrdine);
+$('order-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(busy)return;
+  if(!pending){
+    const prodotti=righe().map(r=>({id:r.querySelector('[data-prodotto]').value,quantita:Number(r.querySelector('[data-quantita]').value)}));
+    if(new Set(prodotti.map(p=>p.id)).size!==prodotti.length){messaggio('order-message','Seleziona ciascun prodotto una sola volta.');return;}
+    pending={requestId:crypto.randomUUID(),data:$('data').value,operatore:$('operatore').value.trim(),sede:$('sede').value.trim(),prodotti,note:$('note').value.trim()};salvaPending();
+  }
+  busy=true;$('order-fields').disabled=true;$('invia-ordine').disabled=true;$('invia-ordine').textContent='Invio in corso…';messaggio('order-message','');
+  try{
+    const result=await api('POST','/api/ordini/richieste',pending);
+    $('conferma').textContent='Ordine '+result.id+' ricevuto dall’Ufficio Acquisti.';
+    const dt=pending.data.split('-').reverse().join('/');
+    $('riepilogo').innerHTML='<p class="wrap"><strong>Data:</strong> '+escapeHtml(dt)+'<br><strong>Nome operatore:</strong> '+escapeHtml(pending.operatore)+'<br><strong>Sede:</strong> '+escapeHtml(pending.sede)+'</p><table class="summary"><thead><tr><th>Prodotto</th><th>Quantità</th></tr></thead><tbody>'+pending.prodotti.map(r=>'<tr><td>'+escapeHtml(catalogo.find(p=>p.id===r.id)?.nome||'Prodotto richiesto')+'</td><td>'+r.quantita+'</td></tr>').join('')+'</tbody></table><p class="wrap"><strong>Note aggiuntive:</strong><br>'+escapeHtml(pending.note||'Nessuna')+'</p>';
+    pending=null;salvaPending();$('richiesta').hidden=true;$('ricevuta').hidden=false;
+  }catch(err){
+    if(err.incerto){messaggio('order-message','Connessione interrotta: l’ordine potrebbe essere già stato ricevuto. Premi “Verifica / riprova invio” per recuperare l’esito senza duplicarlo.');}
+    else {if(utente){pending=null;salvaPending();}$('order-fields').disabled=false;messaggio('order-message',err.message);}
+  }finally{busy=false;$('invia-ordine').textContent=pending?'Verifica / riprova invio':'Invia ordine';sincronizzaRighe();}
+});
+if(token)apriArea().catch(err=>{logoutLocale();messaggio('login-error',err.message);});
+</script>
+</body>
+</html>
