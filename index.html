@@ -112,7 +112,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Intervento richiesto *</label>
-                        <textarea id="richiesta-ticket" rows="3" required maxlength="3000" placeholder="Indicare l'intervento richiesto" class="w-full border rounded p-2 text-sm"></textarea>
+                        <textarea id="richiesta-ticket" rows="3" required maxlength="3000" placeholder="Indicare l'intervento richiesto a La Holding" class="w-full border rounded p-2 text-sm"></textarea>
                     </div>
                     <button type="submit" id="invia-ticket" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded text-sm shadow">
                         Invia Segnalazione
@@ -160,7 +160,8 @@
                                 <th class="p-2.5 text-left border-b">ID</th>
                                 <th class="p-2.5 text-left border-b">Data</th>
                                 <th class="p-2.5 text-left border-b">Segnalatore & Contatto</th>
-                                <th class="p-2.5 text-left border-b">Area</th>
+                                <th class="p-2.5 text-left border-b">Categoria</th>
+                                <th class="p-2.5 text-left border-b">Gravità</th>
                                 <th class="p-2.5 text-left border-b">Descrizione</th>
                                 <th class="p-2.5 text-left border-b">Stato</th>
                             </tr>
@@ -296,6 +297,8 @@
                     segnalatore: document.getElementById('segnalatore-ticket').value.trim(),
                     contatto: document.getElementById('contatto-ticket').value.trim(),
                     luogo: document.getElementById('luogo-ticket').value.trim(),
+                    tipologia: document.getElementById('tipologia-ticket').value,
+                    gravita: document.getElementById('gravita-ticket').value,
                     descrizione: document.getElementById('descrizione-ticket').value.trim(),
                     richiesta: document.getElementById('richiesta-ticket').value.trim()
                 };
@@ -368,7 +371,7 @@
         function scaricaReportSA() {
             const lista = ottieniTicketsFiltrati();
             if (!lista.length) return alert('Nessuna segnalazione da esportare.');
-            const righe = [['ID','Data rilevamento','Data ricezione','Cantiere','Referente','Segnalatore','Email Segnalatore','Luogo','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura']];
+            const righe = [['ID','Data rilevamento','Data ricezione','Cantiere','Referente','Segnalatore','Email Segnalatore','Categoria','Gravità','Luogo','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura']];
             lista.forEach(t => righe.push([t.id,formattaData(t.data),t.creatoIl,cantiereLoggato.nome,cantiereLoggato.referente,t.segnalatore,t.contatto,t.tipologia,t.gravita,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]));
             const csv = '\uFEFF' + righe.map(row => row.map(csvCell).join(';')).join('\r\n');
             const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
