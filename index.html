@@ -102,30 +102,10 @@
                         <input type="email" id="contatto-ticket" required placeholder="nome@ente.it" class="w-full border rounded p-2 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Luogo preciso della non conformità *</label>
-                        <input type="text" id="luogo-ticket" required maxlength="300" placeholder="Es. ingresso principale, piano terra" class="w-full border rounded p-2 text-sm">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Area della non conformità *</label>
+                        <input type="text" id="luogo-ticket" required maxlength="300" placeholder="Es. bagni, aree esterne..." class="w-full border rounded p-2 text-sm">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Categoria Non Conformità *</label>
-                        <select id="tipologia-ticket" required class="w-full border rounded p-2 text-sm bg-white">
-                            <option value="">Seleziona categoria...</option>
-                            <option value="Sicurezza / CSE">Sicurezza / CSE</option>
-                            <option value="Qualità Materiali / Esecuzione">Qualità Materiali / Esecuzione</option>
-                            <option value="Ritardo Cronoprogramma">Ritardo Cronoprogramma</option>
-                            <option value="Ambientale / Rifiuti">Ambientale / Rifiuti</option>
-                            <option value="Documentale / Subappalti">Documentale / Subappalti</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Gravità *</label>
-                        <select id="gravita-ticket" required class="w-full border rounded p-2 text-sm bg-white">
-                            <option value="">Seleziona gravità...</option>
-                            <option value="Bassa">Bassa</option>
-                            <option value="Media">Media</option>
-                            <option value="Alta">Alta</option>
-                            <option value="Critica">Critica</option>
-                        </select>
-                    </div>
+                   
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Descrizione Anomalia *</label>
                         <textarea id="descrizione-ticket" rows="4" required placeholder="Dettagli della non conformità..." class="w-full border rounded p-2 text-sm"></textarea>
