@@ -87,6 +87,10 @@
         .password-toggle[aria-pressed="true"] .password-eye-slash { display: block; }
         .password-field > input::-ms-reveal { display: none; }
     </style>
+<style>
+.oa-page{color:#1e293b}.oa-page [hidden],.oa-dialog [hidden]{display:none!important}.oa-page h2,.oa-dialog h2{font-size:24px;font-weight:700;margin:0}.oa-page h3{font-size:17px;font-weight:700;margin-bottom:6px}.oa-page p{margin:5px 0 14px}.oa-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.oa-panel{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:22px;margin-top:22px}.oa-button,.oa-primary{padding:10px 14px;font-size:14px;font-weight:600;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;white-space:nowrap}.oa-primary{color:white;background:#4338ca;border-color:#4338ca}.oa-button:disabled,.oa-primary:disabled{opacity:.55;cursor:wait}.oa-page input:not([type=checkbox]):not([type=hidden]){display:block;width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:7px;background:white;min-width:0;font-size:14px;min-height:42px}.oa-page .password-field input{padding-right:48px!important}.oa-page input:disabled{background:#f1f5f9!important;color:#64748b}.oa-page label{font-size:13px;font-weight:600;display:block;margin-bottom:5px}.oa-page .oa-check{display:flex;align-items:center;gap:7px;margin:0;white-space:nowrap}.oa-inline{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.oa-inline>input{flex:1;min-width:200px!important}.oa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.oa-table-wrap{overflow-x:auto;margin-top:16px}.oa-table{width:100%;border-collapse:collapse;font-size:14px}.oa-table th{font-size:12px;font-weight:700;color:#64748b;background:#f8fafc;text-align:left;padding:12px}.oa-table td{padding:12px;border-bottom:1px solid #e2e8f0;vertical-align:top;overflow-wrap:anywhere}.oa-muted{color:#64748b;font-size:13px}.oa-message{padding:13px 16px;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:8px;margin:15px 0;white-space:pre-wrap}.oa-message.error{background:#fff7ed;border-color:#fed7aa;color:#9a3412}.oa-settings>section{border-top:1px solid #e2e8f0;margin-top:24px;padding-top:20px}.oa-page summary{cursor:pointer;font-weight:700;font-size:14px}.oa-pill{display:inline-block;padding:3px 8px;border-radius:5px;font-size:12px;font-weight:600;background:#f1f5f9;color:#475569}.oa-pill.ok{background:#ecfdf5;color:#047857}.oa-pill.warn{background:#fff7ed;color:#9a3412}.oa-dialog{width:calc(100% - 32px);max-width:780px;max-height:calc(100dvh - 32px);margin:auto;border:0;border-radius:14px;padding:25px;color:#1e293b;overflow-y:auto}.oa-dialog::backdrop{background:#0f172a99}.oa-dialog p{margin:12px 0}.oa-wrap{white-space:pre-wrap;overflow-wrap:anywhere}.oa-dialog h3{font-weight:700;margin-top:22px}.oa-dialog .oa-primary{margin-top:15px}.oa-page button:focus-visible,.oa-dialog button:focus-visible{outline:3px solid #c7d2fe;outline-offset:2px}@media(max-width:800px){.oa-grid{grid-template-columns:1fr}.oa-heading{align-items:flex-start;flex-wrap:wrap}.oa-panel{padding:15px}}
+
+</style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex min-h-screen">
 
@@ -120,7 +124,8 @@
                 <button onclick="naviga('scadenziario')" id="nav-scadenziario" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800 transition">
                     <span>⏳</span> Scadenziario
                 </button>
-            </nav>
+            <button onclick="naviga('acquisti')" id="nav-acquisti" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800 transition"><span>🛒</span> Ufficio Acquisti</button>
+</nav>
         </div>
         <div class="p-4 border-t border-slate-800">
             <div class="flex items-center gap-2 text-xs text-emerald-400 font-semibold">
@@ -405,7 +410,32 @@
             </div>
         </div>
 
-    </main>
+    <section id="vista-acquisti" class="hidden oa-page">
+  <div class="oa-heading"><div><h2>Ufficio Acquisti</h2><p>Ordini ricevuti dagli operatori.</p></div><button type="button" id="oa-aggiorna" class="oa-button">Aggiorna ordini</button></div>
+  <div id="oa-message" class="oa-message" role="status" hidden></div>
+  <div class="oa-panel">
+    <div class="oa-heading"><label for="oa-cerca">Cerca negli ordini</label><span id="oa-conteggio" class="oa-muted">Caricamento…</span></div>
+    <input id="oa-cerca" type="search" placeholder="Numero ordine, operatore, sede o prodotto">
+    <div class="oa-table-wrap"><table class="oa-table"><thead><tr><th>Ordine</th><th>Data</th><th>Nome operatore</th><th>Sede</th><th>Prodotti</th><th>Notifica e-mail</th><th>Dettaglio</th></tr></thead><tbody id="oa-lista"><tr><td colspan="7">Apri la pagina per caricare gli ordini.</td></tr></tbody></table></div>
+  </div>
+  <details class="oa-panel" id="oa-config"><summary>Configurazione ordini: prodotti, accessi e notifiche</summary>
+    <div class="oa-settings">
+      <section><h3>Notifica e-mail</h3><p class="oa-muted">Ogni nuovo ordine viene notificato a questo indirizzo.</p><form id="oa-email-form"><label for="oa-email">E-mail Ufficio Acquisti</label><div class="oa-inline"><input id="oa-email" type="email" required maxlength="254" placeholder="Inserisci l’indirizzo destinatario"><button class="oa-primary" type="submit">Salva e-mail</button></div></form></section>
+      <section><h3>Elenco prodotti</h3><p class="oa-muted">I prodotti attivi compaiono nel menù a tendina del client. Specifica nel nome anche la confezione, se necessaria.</p>
+        <form id="oa-prodotto-form"><input type="hidden" id="oa-prodotto-id"><label for="oa-prodotto-nome">Nome prodotto</label><div class="oa-inline"><input id="oa-prodotto-nome" required maxlength="200" placeholder="Nome completo del prodotto"><label class="oa-check"><input id="oa-prodotto-attivo" type="checkbox" checked> Attivo</label><button class="oa-primary" type="submit">Salva prodotto</button><button class="oa-button" type="button" id="oa-prodotto-annulla" hidden>Annulla modifica</button></div></form>
+        <div class="oa-table-wrap"><table class="oa-table"><thead><tr><th>Prodotto</th><th>Disponibilità</th><th></th></tr></thead><tbody id="oa-prodotti"></tbody></table></div>
+      </section>
+      <section><h3>Accessi al client ordini</h3><p class="oa-muted">Crea un account da assegnare a ciascun richiedente. Il nome utente e la password consentono l’accesso alla sola richiesta prodotti.</p>
+        <form id="oa-utente-form"><input type="hidden" id="oa-utente-id"><div class="oa-grid"><div><label for="oa-username">Nome utente</label><input id="oa-username" required minlength="3" maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9_-]{2,39}" autocomplete="off"></div><div><label for="oa-utente-nome">Nome operatore</label><input id="oa-utente-nome" required maxlength="200" autocomplete="off"></div><div><label for="oa-password">Password <span id="oa-password-help"></span></label><input id="oa-password" type="password" required minlength="8" maxlength="128" autocomplete="new-password"></div></div><div class="oa-inline" style="margin-top:14px"><label class="oa-check"><input id="oa-utente-attivo" type="checkbox" checked> Accesso attivo</label><button class="oa-primary" type="submit">Salva accesso</button><button class="oa-button" type="button" id="oa-utente-annulla" hidden>Annulla modifica</button></div></form>
+        <div class="oa-table-wrap"><table class="oa-table"><thead><tr><th>Nome utente</th><th>Nome operatore</th><th>Accesso</th><th></th></tr></thead><tbody id="oa-utenti"></tbody></table></div>
+      </section>
+    </div>
+  </details>
+</section>
+
+</main>
+<dialog id="oa-dettaglio" class="oa-dialog" aria-labelledby="oa-dettaglio-titolo"><div class="oa-heading"><h2 id="oa-dettaglio-titolo">Dettaglio ordine</h2><button type="button" class="oa-button" id="oa-chiudi" aria-label="Chiudi dettaglio ordine">Chiudi</button></div><div id="oa-dettaglio-body"></div><div id="oa-dettaglio-message" class="oa-message" role="status" hidden></div></dialog>
+
 
     <!-- ======================================================= -->
     <!-- MODALE MODIFICA CANTIERE                                -->
@@ -561,6 +591,7 @@
                     nascondiPassword();
                     chiudiDettaglioTicket();
                     chiudiPasswordSA(true);
+                    if (document.getElementById('oa-dettaglio').open) document.getElementById('oa-dettaglio').close();
                     document.getElementById('accesso-amministratore').classList.remove('hidden');
                 }
                 throw error;
@@ -580,6 +611,7 @@
                 const success = await caricaDati(true);
                 if (!success) throw new Error('Impossibile leggere l’archivio online.');
                 document.getElementById('accesso-amministratore').classList.add('hidden');
+                if (vistaAttiva === 'acquisti') caricaAcquisti();
             } catch(err) { errorBox.textContent = err.message || 'Accesso non riuscito.'; }
         }
 
@@ -605,7 +637,7 @@
             if (adminToken) caricaDati(true).then((success) => {
                 if (success && adminToken) document.getElementById('accesso-amministratore').classList.add('hidden');
             });
-            setInterval(() => { if (adminToken) caricaDati(true); }, 30000);
+            setInterval(() => { if (adminToken) { if (vistaAttiva === 'acquisti') caricaAcquisti(true); else caricaDati(true); } }, 30000);
         });
 
         // ==========================================
@@ -621,7 +653,10 @@
             document.getElementById('vista-dettaglio-cantiere').classList.toggle('hidden', sezione !== 'dettaglio');
 
             // Stile attivo menu laterale
-            const voci = ['home', 'segnalazioni', 'scadenziario'];
+            document.getElementById('vista-acquisti').classList.toggle('hidden', sezione !== 'acquisti');
+            document.getElementById('barra-kpi-globale').classList.toggle('hidden', sezione === 'acquisti');
+            if (sezione === 'acquisti') caricaAcquisti();
+            const voci = ['home', 'segnalazioni', 'scadenziario', 'acquisti'];
             voci.forEach(v => {
                 const btn = document.getElementById(`nav-${v}`);
                 if (sezione === v) {
@@ -1365,5 +1400,58 @@ async function confermaCambioStato(e) {
         </form>
     </div>
 </div>
+<script>
+// FMFixApp — pagina Ufficio Acquisti, protetta dallo stesso accesso aziendale.
+let oaDati = {ordini:[],prodotti:[],utenti:[],email:''};
+let oaCaricamento = false, oaEmailCaricata = false, oaOrdineAperto = '';
+const oaEl = id => document.getElementById(id);
+function oaMessaggio(testo,errore=false){oaEl('oa-message').textContent=testo;oaEl('oa-message').hidden=!testo;oaEl('oa-message').classList.toggle('error',errore);}
+async function caricaAcquisti(silenzioso=false){
+  if(oaCaricamento || !adminToken)return;
+  oaCaricamento=true;oaEl('oa-aggiorna').disabled=true;
+  try{
+    const result=await apiCall('GET','/api/admin/acquisti/snapshot');oaDati=result;
+    if(!oaEmailCaricata){oaEl('oa-email').value=result.email;oaEmailCaricata=true;}
+    oaRenderOrdini();oaRenderConfigurazione();
+    if(!silenzioso){const mancano=[];if(!result.email)mancano.push('e-mail destinataria');if(!result.prodotti.some(p=>p.attivo))mancano.push('prodotti attivi');if(!result.utenti.some(u=>u.attivo))mancano.push('accessi degli operatori');oaMessaggio(mancano.length?'Completa la configurazione: '+mancano.join(', ')+'.':'');if(mancano.length)oaEl('oa-config').open=true;}
+  }catch(err){oaMessaggio(err.message,true);}finally{oaCaricamento=false;oaEl('oa-aggiorna').disabled=false;}
+}
+function oaRenderOrdini(){
+  const q=oaEl('oa-cerca').value.trim().toLocaleLowerCase('it');
+  const ordini=oaDati.ordini.filter(o=>[o.id,o.operatore,o.utenteId,o.sede,...o.prodotti.map(p=>p.nome)].join(' ').toLocaleLowerCase('it').includes(q));
+  oaEl('oa-conteggio').textContent=ordini.length+' ordini';
+  oaEl('oa-lista').innerHTML=ordini.length?ordini.map(o=>'<tr><td><strong>'+esc(o.id)+'</strong></td><td>'+esc(formattaData(o.data))+'</td><td>'+esc(o.operatore)+'</td><td>'+esc(o.sede)+'</td><td>'+o.prodotti.length+'</td><td><span class="oa-pill '+(o.notifica==='Inviata'?'ok':'warn')+'">'+esc(o.notifica)+'</span></td><td><button type="button" class="oa-button" data-oa-ordine="'+esc(o.id)+'">Apri</button></td></tr>').join(''):'<tr><td colspan="7" class="oa-muted">'+(q?'Nessun ordine corrisponde alla ricerca.':'Nessun ordine ricevuto.')+'</td></tr>';
+  if(oaEl('oa-dettaglio').open)oaMostraDettaglio();
+}
+function oaRenderConfigurazione(){
+  oaEl('oa-prodotti').innerHTML=oaDati.prodotti.length?oaDati.prodotti.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+ (p.attivo?'Attivo':'Disattivato')+'</td><td><button type="button" class="oa-button" data-oa-prodotto="'+esc(p.id)+'">Modifica</button></td></tr>').join(''):'<tr><td colspan="3" class="oa-muted">Aggiungi i prodotti da mostrare nel menù a tendina.</td></tr>';
+  oaEl('oa-utenti').innerHTML=oaDati.utenti.length?oaDati.utenti.map(u=>'<tr><td>'+esc(u.id)+'</td><td>'+esc(u.nome)+'</td><td>'+ (u.attivo?'Attivo':'Disattivato')+'</td><td><button type="button" class="oa-button" data-oa-utente="'+esc(u.id)+'">Modifica / password</button></td></tr>').join(''):'<tr><td colspan="4" class="oa-muted">Crea le credenziali da assegnare ai richiedenti.</td></tr>';
+}
+function oaMostraDettaglio(){
+  const o=oaDati.ordini.find(x=>x.id===oaOrdineAperto);if(!o)return;
+  oaEl('oa-dettaglio-titolo').textContent='Ordine '+o.id;
+  const ricevuto=new Date(o.creatoIl).toLocaleString('it-IT',{timeZone:'Europe/Rome'});
+  oaEl('oa-dettaglio-body').innerHTML='<p class="oa-wrap"><strong>Data:</strong> '+esc(formattaData(o.data))+'<br><strong>Nome operatore:</strong> '+esc(o.operatore)+'<br><strong>Sede:</strong> '+esc(o.sede)+'<br><strong>Account richiedente:</strong> '+esc(o.utenteId)+'<br><strong>Ricevuto il:</strong> '+esc(ricevuto)+'</p><div class="oa-table-wrap"><table class="oa-table"><thead><tr><th>Prodotto</th><th>Quantità</th></tr></thead><tbody>'+o.prodotti.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+p.quantita+'</td></tr>').join('')+'</tbody></table></div><h3>Note aggiuntive</h3><p class="oa-wrap">'+esc(o.note||'Nessuna')+'</p><h3>Notifica e-mail</h3><p class="oa-wrap">'+esc(o.notifica)+' — '+esc(o.notificaA)+(o.notificaIl?'<br>'+esc(new Date(o.notificaIl).toLocaleString('it-IT',{timeZone:'Europe/Rome'})):'')+'</p>'+(o.notifica==='Da verificare'?'<p class="oa-muted">L’invio ha esito incerto: verificare la ricezione nella casella destinataria.</p>':'')+(['Da inviare','Non inviata'].includes(o.notifica)?'<button type="button" class="oa-primary" data-oa-notifica="'+esc(o.id)+'">Riprova notifica e-mail</button>':'');
+}
+function oaResetProdotto(){oaEl('oa-prodotto-form').reset();oaEl('oa-prodotto-id').value='';oaEl('oa-prodotto-annulla').hidden=true;}
+function oaResetUtente(){oaEl('oa-utente-form').reset();oaEl('oa-utente-id').value='';oaEl('oa-username').disabled=false;oaEl('oa-password').required=true;oaEl('oa-password-help').textContent='';oaEl('oa-utente-annulla').hidden=true;nascondiPassword(oaEl('oa-utente-form'));}
+async function oaSalva(form,azione){const buttons=Array.from(form.querySelectorAll('button'));buttons.forEach(b=>b.disabled=true);try{await azione();await caricaAcquisti(true);oaMessaggio('Configurazione salvata.');}catch(err){oaMessaggio(err.message,true);}finally{buttons.forEach(b=>b.disabled=false);}}
+oaEl('oa-aggiorna').addEventListener('click',()=>caricaAcquisti());
+oaEl('oa-cerca').addEventListener('input',oaRenderOrdini);
+oaEl('oa-prodotto-annulla').addEventListener('click',oaResetProdotto);
+oaEl('oa-utente-annulla').addEventListener('click',oaResetUtente);
+oaEl('oa-email-form').addEventListener('submit',e=>{e.preventDefault();oaSalva(e.target,()=>apiCall('PUT','/api/admin/acquisti/email',{email:oaEl('oa-email').value.trim()}));});
+oaEl('oa-prodotto-form').addEventListener('submit',e=>{e.preventDefault();oaSalva(e.target,async()=>{const id=oaEl('oa-prodotto-id').value;await apiCall(id?'PUT':'POST','/api/admin/acquisti/prodotti'+(id?'/'+encodeURIComponent(id):''),{nome:oaEl('oa-prodotto-nome').value.trim(),attivo:oaEl('oa-prodotto-attivo').checked});oaResetProdotto();});});
+oaEl('oa-utente-form').addEventListener('submit',e=>{e.preventDefault();oaSalva(e.target,async()=>{const id=oaEl('oa-utente-id').value;await apiCall(id?'PUT':'POST','/api/admin/acquisti/utenti'+(id?'/'+encodeURIComponent(id):''),{username:oaEl('oa-username').value.trim(),nome:oaEl('oa-utente-nome').value.trim(),password:oaEl('oa-password').value,attivo:oaEl('oa-utente-attivo').checked});oaResetUtente();});});
+oaEl('vista-acquisti').addEventListener('click',e=>{
+  const btn=e.target.closest('button');if(!btn)return;
+  if(btn.dataset.oaOrdine){oaOrdineAperto=btn.dataset.oaOrdine;oaMostraDettaglio();oaEl('oa-dettaglio-message').hidden=true;oaEl('oa-dettaglio').showModal();}
+  if(btn.dataset.oaProdotto){const p=oaDati.prodotti.find(x=>x.id===btn.dataset.oaProdotto);if(!p)return;oaEl('oa-prodotto-id').value=p.id;oaEl('oa-prodotto-nome').value=p.nome;oaEl('oa-prodotto-attivo').checked=p.attivo;oaEl('oa-prodotto-annulla').hidden=false;oaEl('oa-prodotto-nome').focus();}
+  if(btn.dataset.oaUtente){const u=oaDati.utenti.find(x=>x.id===btn.dataset.oaUtente);if(!u)return;oaEl('oa-utente-id').value=u.id;oaEl('oa-username').value=u.id;oaEl('oa-username').disabled=true;oaEl('oa-utente-nome').value=u.nome;oaEl('oa-password').value='';oaEl('oa-password').required=false;oaEl('oa-password-help').textContent='(lascia vuota per mantenerla)';oaEl('oa-utente-attivo').checked=u.attivo;oaEl('oa-utente-annulla').hidden=false;oaEl('oa-utente-nome').focus();}
+});
+oaEl('oa-chiudi').addEventListener('click',()=>oaEl('oa-dettaglio').close());
+oaEl('oa-dettaglio').addEventListener('click',async e=>{const btn=e.target.closest('[data-oa-notifica]');if(!btn)return;btn.disabled=true;try{const r=await apiCall('POST','/api/admin/acquisti/ordini/'+encodeURIComponent(btn.dataset.oaNotifica)+'/notifica');await caricaAcquisti(true);oaEl('oa-dettaglio-message').textContent=r.emailSent?'Notifica inviata.':'Notifica non confermata: controllare lo stato visualizzato.';oaEl('oa-dettaglio-message').hidden=false;}catch(err){oaEl('oa-dettaglio-message').textContent=err.message;oaEl('oa-dettaglio-message').hidden=false;}finally{btn.disabled=false;}});
+
+</script>
 </body>
 </html>
