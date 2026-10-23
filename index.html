@@ -102,29 +102,8 @@
                         <input type="email" id="contatto-ticket" required placeholder="nome@ente.it" class="w-full border rounded p-2 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Luogo preciso della non conformità *</label>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Area della non conformità *</label>
                         <input type="text" id="luogo-ticket" required maxlength="300" placeholder="Es. ingresso principale, piano terra" class="w-full border rounded p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Categoria Non Conformità *</label>
-                        <select id="tipologia-ticket" required class="w-full border rounded p-2 text-sm bg-white">
-                            <option value="">Seleziona categoria...</option>
-                            <option value="Sicurezza / CSE">Sicurezza / CSE</option>
-                            <option value="Qualità Materiali / Esecuzione">Qualità Materiali / Esecuzione</option>
-                            <option value="Ritardo Cronoprogramma">Ritardo Cronoprogramma</option>
-                            <option value="Ambientale / Rifiuti">Ambientale / Rifiuti</option>
-                            <option value="Documentale / Subappalti">Documentale / Subappalti</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Gravità *</label>
-                        <select id="gravita-ticket" required class="w-full border rounded p-2 text-sm bg-white">
-                            <option value="">Seleziona gravità...</option>
-                            <option value="Bassa">Bassa</option>
-                            <option value="Media">Media</option>
-                            <option value="Alta">Alta</option>
-                            <option value="Critica">Critica</option>
-                        </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Descrizione Anomalia *</label>
@@ -180,8 +159,6 @@
                                 <th class="p-2.5 text-left border-b">ID</th>
                                 <th class="p-2.5 text-left border-b">Data</th>
                                 <th class="p-2.5 text-left border-b">Segnalatore & Contatto</th>
-                                <th class="p-2.5 text-left border-b">Categoria</th>
-                                <th class="p-2.5 text-left border-b">Gravità</th>
                                 <th class="p-2.5 text-left border-b">Descrizione</th>
                                 <th class="p-2.5 text-left border-b">Stato</th>
                             </tr>
@@ -317,8 +294,6 @@
                     segnalatore: document.getElementById('segnalatore-ticket').value.trim(),
                     contatto: document.getElementById('contatto-ticket').value.trim(),
                     luogo: document.getElementById('luogo-ticket').value.trim(),
-                    tipologia: document.getElementById('tipologia-ticket').value,
-                    gravita: document.getElementById('gravita-ticket').value,
                     descrizione: document.getElementById('descrizione-ticket').value.trim(),
                     richiesta: document.getElementById('richiesta-ticket').value.trim()
                 };
@@ -361,7 +336,7 @@
             tbody.innerHTML = '';
 
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Nessuna segnalazione trovata nel periodo selezionato.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Nessuna segnalazione trovata nel periodo selezionato.</td></tr>`;
                 return;
             }
 
@@ -374,9 +349,7 @@
                             <div class="font-medium">${esc(t.segnalatore)}</div>
                             <div class="text-xs text-blue-600 font-mono">${esc(t.contatto || '-')}</div>
                         </td>
-                        <td class="p-2.5">${esc(t.tipologia)}</td>
-                        <td class="p-2.5 font-bold ${t.gravita === 'Critica' || t.gravita === 'Alta' ? 'text-red-600' : 'text-slate-600'}">${t.gravita}</td>
-                        <td class="p-2.5"><div>${esc(t.descrizione)}</div><div class="text-xs text-slate-500 mt-1">📍 ${esc(t.luogo || '-')}</div><div class="text-xs text-slate-500 mt-1">Intervento: ${esc(t.richiesta || '-')}</div></td>
+                        <td class="p-2.5"><div>${esc(t.descrizione)}</div><div class="text-xs text-slate-500 mt-1">Area: ${esc(t.luogo || '-')}</div><div class="text-xs text-slate-500 mt-1">Intervento: ${esc(t.richiesta || '-')}</div></td>
                         <td class="p-2.5"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs font-semibold">${t.stato}</span></td>
                     </tr>
                 `;
@@ -391,8 +364,8 @@
         function scaricaReportSA() {
             const lista = ottieniTicketsFiltrati();
             if (!lista.length) return alert('Nessuna segnalazione da esportare.');
-            const righe = [['ID','Data rilevamento','Data ricezione','Cantiere','Referente','Segnalatore','Email Segnalatore','Categoria','Gravità','Luogo','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura']];
-            lista.forEach(t => righe.push([t.id,formattaData(t.data),t.creatoIl,cantiereLoggato.nome,cantiereLoggato.referente,t.segnalatore,t.contatto,t.tipologia,t.gravita,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]));
+            const righe = [['ID','Data rilevamento','Data ricezione','Cantiere','Referente','Segnalatore','Email Segnalatore','Area della non conformità','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura']];
+            lista.forEach(t => righe.push([t.id,formattaData(t.data),t.creatoIl,cantiereLoggato.nome,cantiereLoggato.referente,t.segnalatore,t.contatto,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]));
             const csv = '\uFEFF' + righe.map(row => row.map(csvCell).join(';')).join('\r\n');
             const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
             const link = document.createElement('a'); link.href=url;
