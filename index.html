@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FMFixApp</title>
+    <meta name="fmfixapp-versione" content="foto-sa-2026-10-26">
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -144,6 +145,28 @@
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Intervento richiesto *</label>
                         <textarea id="richiesta-ticket" rows="3" required maxlength="3000" placeholder="Indicare l'intervento richiesto a La Holding" class="w-full border rounded p-2 text-sm"></textarea>
+                    </div>
+                    <!-- Foto facoltativa: galleria o fotocamera, mai inviata via email. -->
+                    <div>
+                        <label for="foto-ticket-file" class="block text-xs font-bold uppercase text-slate-600 mb-1">Foto della non conformità (facoltativa)</label>
+                        <input type="file" id="foto-ticket-file" accept="image/*" class="w-full border rounded p-2 text-sm bg-white" aria-describedby="foto-ticket-nota">
+                        <input type="file" id="foto-ticket-camera" accept="image/*" capture="environment" class="hidden" tabindex="-1" aria-label="Scatta foto con la fotocamera">
+                        <button type="button" id="foto-ticket-scatta" class="mt-2 border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold text-sm px-3 py-2 rounded" onclick="document.getElementById('foto-ticket-camera').click()">📷 Scatta una foto</button>
+                        <p id="foto-ticket-nota" class="text-xs text-slate-500 mt-2">Al massimo una foto. Non includere persone, documenti o dati personali nell'inquadratura. La foto non viene allegata all'email.</p>
+                        <div id="foto-ticket-preview-box" class="hidden mt-3 border rounded-lg bg-slate-50 p-3">
+                            <img id="foto-ticket-preview" alt="Anteprima della fotografia selezionata" class="max-h-44 w-full object-contain rounded">
+                            <div class="flex justify-between items-center gap-2 mt-2">
+                                <span id="foto-ticket-nome" class="text-xs text-slate-500 truncate"></span>
+                                <button type="button" onclick="rimuoviFotoSelezionata()" class="text-xs font-semibold text-red-700 hover:underline">Rimuovi foto</button>
+                            </div>
+                        </div>
+                        <div id="foto-ticket-riprova" class="hidden mt-3 border border-amber-200 bg-amber-50 p-3 rounded-lg">
+                            <p id="foto-ticket-riprova-testo" class="text-xs text-amber-900 mb-2"></p>
+                            <div class="flex flex-wrap gap-2">
+                                <button id="foto-ticket-btn-riprova" type="button" onclick="riprovaFotoSegnalazione()" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-3 py-2 rounded">Riprova caricamento foto</button>
+                                <button type="button" onclick="ignoraFotoInAttesa()" class="border border-amber-300 bg-white text-amber-900 text-xs font-semibold px-3 py-2 rounded">Prosegui senza foto</button>
+                            </div>
+                        </div>
                     </div>
                     <button type="submit" id="invia-ticket" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded text-sm shadow">
                         Invia Segnalazione
@@ -383,11 +406,112 @@
             document.getElementById('schermata-login').classList.remove('hidden');
         }
 
+        // La selezione è facoltativa. La conversione JPEG riduce peso e rimuove
+        // i metadati EXIF prima di inviare l'immagine a Google Apps Script.
+        let fotoTicketFile = null;
+        let fotoTicketPreviewUrl = '';
+        let fotoTicketInAttesa = null;
+
+        function rimuoviFotoSelezionata() {
+            fotoTicketFile = null;
+            document.getElementById('foto-ticket-file').value = '';
+            document.getElementById('foto-ticket-camera').value = '';
+            document.getElementById('foto-ticket-preview-box').classList.add('hidden');
+            document.getElementById('foto-ticket-preview').removeAttribute('src');
+            if (fotoTicketPreviewUrl) URL.revokeObjectURL(fotoTicketPreviewUrl);
+            fotoTicketPreviewUrl = '';
+        }
+
+        function selezionaFotoTicket(input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/') || file.size > 20 * 1024 * 1024) {
+                input.value = '';
+                avvisoFM('Seleziona un’immagine valida di massimo 20 MB. Verrà ridotta prima dell’invio.', 'avviso');
+                return;
+            }
+            rimuoviFotoSelezionata();
+            fotoTicketFile = file;
+            fotoTicketPreviewUrl = URL.createObjectURL(file);
+            document.getElementById('foto-ticket-preview').src = fotoTicketPreviewUrl;
+            document.getElementById('foto-ticket-nome').textContent = file.name || 'Fotografia';
+            document.getElementById('foto-ticket-preview-box').classList.remove('hidden');
+        }
+
+        document.getElementById('foto-ticket-file').addEventListener('change', function () { selezionaFotoTicket(this); });
+        document.getElementById('foto-ticket-camera').addEventListener('change', function () { selezionaFotoTicket(this); });
+
+        function preparaFotoTicket(file) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Immagine non leggibile dal browser. Scegli una foto JPEG o PNG.')); };
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const scala = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+                        let larghezza = Math.max(1, Math.round(img.naturalWidth * scala));
+                        let altezza = Math.max(1, Math.round(img.naturalHeight * scala));
+                        for (let giro = 0; giro < 8; giro++) {
+                            canvas.width = larghezza;
+                            canvas.height = altezza;
+                            const ctx = canvas.getContext('2d');
+                            if (!ctx) throw new Error('Elaborazione della fotografia non disponibile.');
+                            ctx.drawImage(img, 0, 0, larghezza, altezza);
+                            const qualita = Math.max(0.50, 0.82 - giro * 0.055);
+                            const dataUrl = canvas.toDataURL('image/jpeg', qualita);
+                            const base64 = dataUrl.split(',')[1];
+                            if (base64 && base64.length <= 1800000) {
+                                resolve({mimeType: 'image/jpeg', base64});
+                                return;
+                            }
+                            larghezza = Math.max(1, Math.round(larghezza * 0.80));
+                            altezza = Math.max(1, Math.round(altezza * 0.80));
+                        }
+                        reject(new Error('Fotografia troppo grande: prova un’immagine più piccola.'));
+                    } catch (err) { reject(err); }
+                };
+                img.src = url;
+            });
+        }
+
+        function ignoraFotoInAttesa() {
+            fotoTicketInAttesa = null;
+            document.getElementById('foto-ticket-riprova').classList.add('hidden');
+        }
+
+        async function riprovaFotoSegnalazione() {
+            if (!fotoTicketInAttesa) return;
+            const btn = document.getElementById('foto-ticket-btn-riprova');
+            btn.disabled = true;
+            btn.textContent = 'Caricamento…';
+            try {
+                await apiSA('POST', '/api/sa/tickets/' + encodeURIComponent(fotoTicketInAttesa.id) + '/foto', fotoTicketInAttesa.foto);
+                const id = fotoTicketInAttesa.id;
+                ignoraFotoInAttesa();
+                avvisoFM('Foto associata correttamente alla segnalazione ' + id + '.', 'successo', 'Fotografia salvata');
+            } catch(err) {
+                avvisoFM('Fotografia ancora non caricata: ' + err.message + '. La segnalazione è già registrata; non inviarla di nuovo.', 'errore');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Riprova caricamento foto';
+            }
+        }
+
         async function inviaSegnalazione(e) {
             e.preventDefault();
+            if (fotoTicketInAttesa) {
+                avvisoFM('La segnalazione ' + fotoTicketInAttesa.id + ' è già registrata. Riprova l’invio della sua foto oppure seleziona “Prosegui senza foto” prima di crearne un’altra.', 'avviso');
+                return;
+            }
             const btn = document.getElementById('invia-ticket');
-            btn.disabled = true; btn.textContent = 'Registrazione in corso…';
+            btn.disabled = true;
+            btn.textContent = 'Registrazione in corso…';
             try {
+                // Se la foto non può essere elaborata, NON registriamo ancora
+                // il ticket: l'utente può scegliere un'altra foto senza duplicati.
+                const foto = fotoTicketFile ? await preparaFotoTicket(fotoTicketFile) : null;
                 const nuovo = {
                     data: document.getElementById('data-ticket').value,
                     segnalatore: document.getElementById('segnalatore-ticket').value.trim(),
@@ -396,19 +520,45 @@
                     descrizione: document.getElementById('descrizione-ticket').value.trim(),
                     richiesta: document.getElementById('richiesta-ticket').value.trim()
                 };
-                const result = await apiSA('POST','/api/sa/tickets',nuovo);
+                // Primo invio: ticket e normale email senza alcun allegato.
+                const result = await apiSA('POST', '/api/sa/tickets', nuovo);
+                const id = result.ticket.id;
+                let fotoSalvata = false;
+                let fotoErrore = '';
+                if (foto) {
+                    btn.textContent = 'Caricamento fotografia…';
+                    try {
+                        // Secondo invio: JPEG soltanto nell'archivio privato.
+                        await apiSA('POST', '/api/sa/tickets/' + encodeURIComponent(id) + '/foto', foto);
+                        fotoSalvata = true;
+                    } catch (err) {
+                        fotoErrore = err.message;
+                        fotoTicketInAttesa = {id, foto};
+                        document.getElementById('foto-ticket-riprova-testo').textContent =
+                            'Segnalazione ' + id + ' registrata, ma la fotografia non è stata caricata. ' + fotoErrore;
+                        document.getElementById('foto-ticket-riprova').classList.remove('hidden');
+                    }
+                }
                 document.getElementById('form-segnalazione-sa').reset();
+                rimuoviFotoSelezionata();
                 await caricaSegnalazioniSA(true);
+                const emailEsito = result.emailSent
+                    ? 'Notifica email accettata dal servizio di invio (senza foto).'
+                    : 'Notifica email non inviata; il ticket risulta comunque registrato.';
                 avvisoFM(
-                    `Segnalazione ${result.ticket.id} registrata correttamente.\n` +
-                    (result.emailSent
-                        ? 'La notifica email è stata accettata dal servizio di invio.'
-                        : 'La segnalazione è salvata, ma la notifica email non è stata inviata.'),
-                    result.emailSent ? 'successo' : 'avviso',
+                    'Segnalazione ' + id + ' registrata correttamente.\n' +
+                    (foto ? (fotoSalvata ? 'Fotografia salvata e consultabile nel gestionale.\n' :
+                        'Fotografia NON salvata. Usa «Riprova caricamento foto» senza creare un nuovo ticket.\n') :
+                        'Nessuna fotografia allegata.\n') + emailEsito,
+                    fotoErrore || !result.emailSent ? 'avviso' : 'successo',
                     'Segnalazione registrata'
                 );
-            } catch(err) { avvisoFM('Segnalazione non registrata: ' + err.message, 'errore'); }
-            finally { btn.disabled = false; btn.textContent = 'Invia Segnalazione'; }
+            } catch (err) {
+                avvisoFM('Operazione non completata: ' + err.message, 'errore');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Invia Segnalazione';
+            }
         }
 
         function aggiornaFiltriUI() {
