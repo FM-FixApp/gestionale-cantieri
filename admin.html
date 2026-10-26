@@ -421,7 +421,7 @@
   <details class="oa-panel" id="oa-config"><summary>Configurazione ordini: prodotti, accessi e notifiche</summary>
     <div class="oa-settings">
       <section><h3>Notifica e-mail</h3><p class="oa-muted">Ogni nuovo ordine viene notificato a questo indirizzo.</p><form id="oa-email-form"><label for="oa-email">E-mail Ufficio Acquisti</label><div class="oa-inline"><input id="oa-email" type="email" required maxlength="254" placeholder="Inserisci l’indirizzo destinatario"><button class="oa-primary" type="submit">Salva e-mail</button></div></form></section>
-      <section><h3>Elenco prodotti</h3><p class="oa-muted">I prodotti attivi compaiono nel menù a tendina del client. Specifica nel nome anche la confezione, se necessaria.</p>
+      <section><h3>Elenco prodotti</h3><p class="oa-muted">Gestisci i prodotti qui oppure nella scheda ProdottiOrdini di Google Fogli. Per aggiungere una riga nel foglio compila nome e attivo (1 = disponibile, 0 = escluso); lascia vuoto id, che viene assegnato automaticamente. Le modifiche compaiono nel client al nuovo accesso o premendo “Aggiorna elenco prodotti”.</p><p><a id="oa-link-foglio" class="oa-button" target="_blank" rel="noopener noreferrer" hidden>Apri elenco in Google Fogli</a></p>
         <form id="oa-prodotto-form"><input type="hidden" id="oa-prodotto-id"><label for="oa-prodotto-nome">Nome prodotto</label><div class="oa-inline"><input id="oa-prodotto-nome" required maxlength="200" placeholder="Nome completo del prodotto"><label class="oa-check"><input id="oa-prodotto-attivo" type="checkbox" checked> Attivo</label><button class="oa-primary" type="submit">Salva prodotto</button><button class="oa-button" type="button" id="oa-prodotto-annulla" hidden>Annulla modifica</button></div></form>
         <div class="oa-table-wrap"><table class="oa-table"><thead><tr><th>Prodotto</th><th>Disponibilità</th><th></th></tr></thead><tbody id="oa-prodotti"></tbody></table></div>
       </section>
@@ -1411,6 +1411,8 @@ async function caricaAcquisti(silenzioso=false){
   oaCaricamento=true;oaEl('oa-aggiorna').disabled=true;
   try{
     const result=await apiCall('GET','/api/admin/acquisti/snapshot');oaDati=result;
+    const link=oaEl('oa-link-foglio');
+    if(result.prodottiFoglioUrl && /^https:\/\/docs\.google\.com\/spreadsheets\/d\//.test(result.prodottiFoglioUrl)){link.href=result.prodottiFoglioUrl;link.hidden=false;}else{link.removeAttribute('href');link.hidden=true;}
     if(!oaEmailCaricata){oaEl('oa-email').value=result.email;oaEmailCaricata=true;}
     oaRenderOrdini();oaRenderConfigurazione();
     if(!silenzioso){const mancano=[];if(!result.email)mancano.push('e-mail destinataria');if(!result.prodotti.some(p=>p.attivo))mancano.push('prodotti attivi');if(!result.utenti.some(u=>u.attivo))mancano.push('accessi degli operatori');oaMessaggio(mancano.length?'Completa la configurazione: '+mancano.join(', ')+'.':'');if(mancano.length)oaEl('oa-config').open=true;}
