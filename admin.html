@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestionale Interno Cantieri - Admin</title>
-    <meta name="fmfixapp-versione" content="gestionale-popup-2026-10-26">
+    <meta name="fmfixapp-versione" content="gestionale-foto-2026-10-26">
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -564,11 +564,22 @@
             <section class="ticket-modal-section"><h3>Area della non conformità</h3><p id="ticket-modal-luogo" class="ticket-full-text"></p></section>
             <section class="ticket-modal-section"><h3>Descrizione completa</h3><p id="ticket-modal-descrizione" class="ticket-full-text"></p></section>
             <section class="ticket-modal-section"><h3>Intervento richiesto</h3><p id="ticket-modal-richiesta" class="ticket-full-text"></p></section>
+            <section id="ticket-foto-sezione" class="ticket-modal-section" hidden>
+                <h3>Fotografia allegata</h3>
+                <p id="ticket-foto-stato" class="text-sm text-slate-500 mb-2" role="status">Caricamento fotografia…</p>
+                <img id="ticket-foto-immagine" hidden alt="Fotografia allegata alla non conformità" class="w-full max-h-[450px] object-contain rounded-lg border border-slate-200 bg-slate-50 cursor-zoom-in" title="Clicca per ingrandire" onclick="ingrandisciFotoTicket()">
+                <p id="ticket-foto-didascalia" class="hidden text-xs text-slate-500 mt-2">Clicca sulla foto per ingrandirla.</p>
+            </section>
         </div>
         <footer class="ticket-modal-footer">
             <button type="button" class="ticket-close ticket-print" onclick="stampaDettaglioTicket()">Stampa</button>
             <button type="button" class="ticket-close" onclick="chiudiDettaglioTicket()">Chiudi dettaglio</button>
         </footer>
+    </dialog>
+
+    <dialog id="ticket-foto-zoom" aria-label="Fotografia della segnalazione ingrandita" class="w-[calc(100%-2rem)] max-w-5xl max-h-[95dvh] p-3 bg-white rounded-xl shadow-2xl border-0 m-auto backdrop:bg-slate-900/80">
+        <div class="flex justify-end mb-2"><button type="button" onclick="document.getElementById('ticket-foto-zoom').close()" class="ticket-close">Chiudi fotografia ✕</button></div>
+        <img id="ticket-foto-zoom-img" alt="Fotografia ingrandita della segnalazione" class="block mx-auto max-w-full max-h-[80dvh] object-contain">
     </dialog>
 
     <!-- Autenticazione amministratore; le altre sezioni restano inalterate. -->
@@ -1290,6 +1301,50 @@ async function confermaCambioStato(e) {
             });
         }
 
+        // Caricamento protetto: la foto NON ha un URL pubblico su Google Drive.
+        // Solo un amministratore autenticato può ottenere i dati JPEG.
+        let richiestaFotoDettaglio = 0;
+        async function caricaFotoDettaglio(id) {
+            const richiesta = ++richiestaFotoDettaglio;
+            const sezione = document.getElementById('ticket-foto-sezione');
+            const img = document.getElementById('ticket-foto-immagine');
+            const stato = document.getElementById('ticket-foto-stato');
+            const didascalia = document.getElementById('ticket-foto-didascalia');
+            img.hidden = true;
+            img.removeAttribute('src');
+            didascalia.classList.add('hidden');
+            stato.textContent = 'Verifica fotografia allegata…';
+            stato.hidden = false;
+            sezione.hidden = false;
+            try {
+                const risposta = await apiCall('GET', '/api/admin/tickets/' + encodeURIComponent(id) + '/foto');
+                if (richiesta !== richiestaFotoDettaglio || ticketDettaglioId !== id || !dialogTicket.open) return;
+                if (!risposta.presente) { sezione.hidden = true; return; }
+                if (risposta.mimeType !== 'image/jpeg' || typeof risposta.base64 !== 'string') {
+                    throw new Error('La risposta non contiene un JPEG valido.');
+                }
+                img.onload = () => {
+                    if (richiesta !== richiestaFotoDettaglio) return;
+                    stato.hidden = true;
+                    didascalia.classList.remove('hidden');
+                };
+                img.onerror = () => { stato.textContent = 'Impossibile visualizzare la fotografia.'; };
+                img.src = 'data:image/jpeg;base64,' + risposta.base64;
+                img.hidden = false;
+            } catch (err) {
+                if (richiesta !== richiestaFotoDettaglio || ticketDettaglioId !== id) return;
+                stato.textContent = 'Impossibile caricare la foto: ' + err.message;
+                sezione.hidden = false;
+            }
+        }
+
+        function ingrandisciFotoTicket() {
+            const img = document.getElementById('ticket-foto-immagine');
+            if (img.hidden || !img.src) return;
+            document.getElementById('ticket-foto-zoom-img').src = img.src;
+            document.getElementById('ticket-foto-zoom').showModal();
+        }
+
         function apriDettaglioTicket(id, tabellaId) {
             if (!tickets.some(t => t.id === id)) return;
             ticketDettaglioId = id;
@@ -1301,6 +1356,7 @@ async function confermaCambioStato(e) {
                 dialogTicket.showModal();
             }
             document.getElementById('ticket-modal-body').scrollTop = 0;
+            caricaFotoDettaglio(id);
         }
 
         // Copia completa dedicata alla stampa: nessun limite di altezza del popup.
@@ -1341,6 +1397,9 @@ async function confermaCambioStato(e) {
         window.addEventListener('afterprint', terminaStampaDettaglioTicket);
 
         function chiudiDettaglioTicket() {
+            ++richiestaFotoDettaglio;
+            const zoom = document.getElementById('ticket-foto-zoom');
+            if (zoom.open) zoom.close();
             if (dialogTicket.open) dialogTicket.close();
         }
 
