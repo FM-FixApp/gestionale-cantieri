@@ -22,6 +22,38 @@
     <link rel="manifest" href="./manifest-icone.json">
 <link rel="apple-touch-icon" sizes="180x180" href="./icona-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icona-192.png">
+    <!-- Finestra di comunicazione FMFixApp (comune a conferme, errori e avvisi). -->
+    <style>
+        dialog.fm-dialog { position: fixed; inset: 0; margin: auto; padding: 0; border: 0;
+            width: 460px; max-width: calc(100% - 32px); max-height: calc(100dvh - 32px);
+            border-radius: 16px; background: #fff; color: #1e293b;
+            box-shadow: 0 26px 70px rgba(15,23,42,.28); overflow-y: auto; }
+        dialog.fm-dialog::backdrop { background: rgba(15,23,42,.62); }
+        .fm-dialog-inner { padding: 28px; }
+        .fm-dialog-mark { width: 46px; height: 46px; border-radius: 13px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 25px; font-weight: 700; margin-bottom: 18px; }
+        .fm-dialog-mark[data-tipo="successo"] { background: #dcfce7; color: #166534; }
+        .fm-dialog-mark[data-tipo="errore"] { background: #fee2e2; color: #b91c1c; }
+        .fm-dialog-mark[data-tipo="avviso"] { background: #fef3c7; color: #92400e; }
+        .fm-dialog-mark[data-tipo="conferma"] { background: #fee2e2; color: #b91c1c; }
+        .fm-dialog-title { font-size: 19px; font-weight: 750; line-height: 1.35; margin: 0 0 10px; }
+        .fm-dialog-message { color: #475569; font-size: 14px; line-height: 1.65;
+            white-space: pre-line; overflow-wrap: anywhere; margin: 0; }
+        .fm-dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px;
+            margin-top: 26px; padding-top: 18px; border-top: 1px solid #e2e8f0; }
+        .fm-dialog-btn { appearance: none; border-radius: 8px; padding: 10px 19px;
+            font-size: 14px; font-weight: 650; cursor: pointer; border: 1px solid transparent; }
+        .fm-dialog-btn:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+        .fm-dialog-btn-secondary { background: #fff; color: #334155; border-color: #cbd5e1; }
+        .fm-dialog-btn-secondary:hover { background: #f1f5f9; }
+        .fm-dialog-btn-primary { color: #fff; background: #1d4ed8; }
+        .fm-dialog-btn-primary:hover { background: #1e40af; }
+        .fm-dialog-btn-primary.fm-dialog-danger { background: #b91c1c; }
+        .fm-dialog-btn-primary.fm-dialog-danger:hover { background: #991b1b; }
+        .fm-dialog [hidden] { display: none !important; }
+        @media (max-width: 520px) { .fm-dialog-inner { padding: 22px; } }
+    </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800">
     <!-- SCHERMATA DI ACCESSO S.A. -->
@@ -171,7 +203,74 @@
         </main>
     </div>
 
+    <!-- Popup personalizzato: sostituisce gli alert/confirm del browser. -->
+    <dialog id="fm-dialog" class="fm-dialog" aria-labelledby="fm-dialog-title" aria-describedby="fm-dialog-message">
+        <div class="fm-dialog-inner">
+            <span id="fm-dialog-mark" class="fm-dialog-mark" data-tipo="successo" aria-hidden="true">✓</span>
+            <h2 id="fm-dialog-title" class="fm-dialog-title">Operazione completata</h2>
+            <p id="fm-dialog-message" class="fm-dialog-message"></p>
+            <div class="fm-dialog-actions">
+                <button type="button" id="fm-dialog-cancel" class="fm-dialog-btn fm-dialog-btn-secondary" hidden>Annulla</button>
+                <button type="button" id="fm-dialog-ok" class="fm-dialog-btn fm-dialog-btn-primary">Chiudi</button>
+            </div>
+        </div>
+    </dialog>
+
     <script>
+        // Finestre personalizzate non bloccanti; per le eliminazioni restituiscono true/false.
+        let codaFinestreFM = Promise.resolve();
+        function finestraFM(messaggio, tipo = 'successo', titolo = '') {
+            const prossimo = codaFinestreFM.then(() => new Promise(risolvi => {
+                const dialogo = document.getElementById('fm-dialog');
+                const conferma = tipo === 'conferma';
+                const titoloDefault = {
+                    successo: 'Operazione completata', errore: 'Operazione non riuscita',
+                    avviso: 'Attenzione', conferma: 'Conferma eliminazione'
+                };
+                const simboli = { successo: '✓', errore: '!', avviso: 'i', conferma: '?' };
+                const simbolo = document.getElementById('fm-dialog-mark');
+                simbolo.dataset.tipo = tipo;
+                simbolo.textContent = simboli[tipo] || 'i';
+                document.getElementById('fm-dialog-title').textContent = titolo || titoloDefault[tipo] || 'Avviso';
+                document.getElementById('fm-dialog-message').textContent = String(messaggio ?? '');
+                const annulla = document.getElementById('fm-dialog-cancel');
+                const ok = document.getElementById('fm-dialog-ok');
+                annulla.hidden = !conferma;
+                ok.textContent = conferma ? 'Elimina' : 'Chiudi';
+                ok.classList.toggle('fm-dialog-danger', conferma);
+                const focusPrecedente = document.activeElement;
+                let chiusa = false;
+                function termina(esito) {
+                    if (chiusa) return;
+                    chiusa = true;
+                    ok.removeEventListener('click', confermaOperazione);
+                    annulla.removeEventListener('click', annullaOperazione);
+                    dialogo.removeEventListener('cancel', annullaDaTastiera);
+                    if (dialogo.open) dialogo.close();
+                    if (focusPrecedente?.isConnected && typeof focusPrecedente.focus === 'function') {
+                        focusPrecedente.focus({ preventScroll: true });
+                    }
+                    risolvi(esito);
+                }
+                function confermaOperazione() { termina(true); }
+                function annullaOperazione() { termina(false); }
+                function annullaDaTastiera(event) { event.preventDefault(); termina(false); }
+                ok.addEventListener('click', confermaOperazione);
+                annulla.addEventListener('click', annullaOperazione);
+                dialogo.addEventListener('cancel', annullaDaTastiera);
+                dialogo.showModal();
+                (conferma ? annulla : ok).focus();
+            }));
+            codaFinestreFM = prossimo.then(() => undefined, () => undefined);
+            return prossimo;
+        }
+        function avvisoFM(messaggio, tipo = 'successo', titolo = '') {
+            return finestraFM(messaggio, tipo, titolo);
+        }
+        function confermaFM(messaggio, titolo = 'Conferma eliminazione') {
+            return finestraFM(messaggio, 'conferma', titolo);
+        }
+
         // URL dell'Applicazione Web generato da Google Apps Script
         const API_URL = 'https://script.google.com/macros/s/AKfycbyX8jGaJU4CPejihMOHqGQ_TdC19DY34rQiYMCYbp_IuIG2GaoqCHBT-ALeoATqlSUE/exec';
 
@@ -210,7 +309,7 @@
                 ticketsSA = result.tickets;
                 aggiornaIntestazioneSA();
                 renderTabellaSA();
-            } catch(err) { if (!silenzioso) alert(err.message); }
+            } catch(err) { if (!silenzioso) avvisoFM(err.message, 'errore'); }
         }
 
         window.addEventListener('load', () => {
@@ -269,7 +368,7 @@
                 document.getElementById('area-operativa').classList.remove('hidden');
                 document.getElementById('input-mese').value = new Date().toISOString().slice(0,7);
                 await caricaSegnalazioniSA();
-            } catch(err) { alert(err.message || 'Accesso non riuscito.'); }
+            } catch(err) { avvisoFM(err.message || 'Accesso non riuscito.', 'errore', 'Accesso non riuscito'); }
         }
 
         function esci() {
@@ -300,9 +399,15 @@
                 const result = await apiSA('POST','/api/sa/tickets',nuovo);
                 document.getElementById('form-segnalazione-sa').reset();
                 await caricaSegnalazioniSA(true);
-                alert(`Segnalazione ${result.ticket.id} REGISTRATA nell'archivio condiviso.\n` +
-                      (result.emailSent ? 'Notifica email inoltrata al server di posta.' : 'Notifica email non inviata: configurazione SMTP assente o errore. La segnalazione è comunque registrata.'));
-            } catch(err) { alert('Segnalazione non registrata: ' + err.message); }
+                avvisoFM(
+                    `Segnalazione ${result.ticket.id} registrata correttamente.\n` +
+                    (result.emailSent
+                        ? 'La notifica email è stata accettata dal servizio di invio.'
+                        : 'La segnalazione è salvata, ma la notifica email non è stata inviata.'),
+                    result.emailSent ? 'successo' : 'avviso',
+                    'Segnalazione registrata'
+                );
+            } catch(err) { avvisoFM('Segnalazione non registrata: ' + err.message, 'errore'); }
             finally { btn.disabled = false; btn.textContent = 'Invia Segnalazione'; }
         }
 
@@ -363,7 +468,7 @@
         }
         function scaricaReportSA() {
             const lista = ottieniTicketsFiltrati();
-            if (!lista.length) return alert('Nessuna segnalazione da esportare.');
+            if (!lista.length) return avvisoFM('Nessuna segnalazione da esportare.', 'avviso');
             const righe = [['ID','Data rilevamento','Data ricezione','Cantiere','Referente','Segnalatore','Email Segnalatore','Area della non conformità','Descrizione','Intervento richiesto','Stato','Data aggiornamento','Data chiusura']];
             lista.forEach(t => righe.push([t.id,formattaData(t.data),t.creatoIl,cantiereLoggato.nome,cantiereLoggato.referente,t.segnalatore,t.contatto,t.luogo,t.descrizione,t.richiesta,t.stato,t.aggiornatoIl,t.chiusoIl]));
             const csv = '\uFEFF' + righe.map(row => row.map(csvCell).join(';')).join('\r\n');
