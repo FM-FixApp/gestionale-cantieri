@@ -121,6 +121,13 @@
 .oa-page{color:#1e293b}.oa-page [hidden],.oa-dialog [hidden]{display:none!important}.oa-page h2,.oa-dialog h2{font-size:24px;font-weight:700;margin:0}.oa-page h3{font-size:17px;font-weight:700;margin-bottom:6px}.oa-page p{margin:5px 0 14px}.oa-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.oa-panel{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:22px;margin-top:22px}.oa-button,.oa-primary{padding:10px 14px;font-size:14px;font-weight:600;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;white-space:nowrap}.oa-primary{color:white;background:#4338ca;border-color:#4338ca}.oa-button:disabled,.oa-primary:disabled{opacity:.55;cursor:wait}.oa-page input:not([type=checkbox]):not([type=hidden]){display:block;width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:7px;background:white;min-width:0;font-size:14px;min-height:42px}.oa-page .password-field input{padding-right:48px!important}.oa-page input:disabled{background:#f1f5f9!important;color:#64748b}.oa-page label{font-size:13px;font-weight:600;display:block;margin-bottom:5px}.oa-page .oa-check{display:flex;align-items:center;gap:7px;margin:0;white-space:nowrap}.oa-inline{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.oa-inline>input{flex:1;min-width:200px!important}.oa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.oa-table-wrap{overflow-x:auto;margin-top:16px}.oa-table{width:100%;border-collapse:collapse;font-size:14px}.oa-table th{font-size:12px;font-weight:700;color:#64748b;background:#f8fafc;text-align:left;padding:12px}.oa-table td{padding:12px;border-bottom:1px solid #e2e8f0;vertical-align:top;overflow-wrap:anywhere}.oa-muted{color:#64748b;font-size:13px}.oa-message{padding:13px 16px;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:8px;margin:15px 0;white-space:pre-wrap}.oa-message.error{background:#fff7ed;border-color:#fed7aa;color:#9a3412}.oa-settings>section{border-top:1px solid #e2e8f0;margin-top:24px;padding-top:20px}.oa-page summary{cursor:pointer;font-weight:700;font-size:14px}.oa-pill{display:inline-block;padding:3px 8px;border-radius:5px;font-size:12px;font-weight:600;background:#f1f5f9;color:#475569}.oa-pill.ok{background:#ecfdf5;color:#047857}.oa-pill.warn{background:#fff7ed;color:#9a3412}.oa-dialog{width:calc(100% - 32px);max-width:780px;max-height:calc(100dvh - 32px);margin:auto;border:0;border-radius:14px;padding:25px;color:#1e293b;overflow-y:auto}.oa-dialog::backdrop{background:#0f172a99}.oa-dialog p{margin:12px 0}.oa-wrap{white-space:pre-wrap;overflow-wrap:anywhere}.oa-dialog h3{font-weight:700;margin-top:22px}.oa-dialog .oa-primary{margin-top:15px}.oa-page button:focus-visible,.oa-dialog button:focus-visible{outline:3px solid #c7d2fe;outline-offset:2px}@media(max-width:800px){.oa-grid{grid-template-columns:1fr}.oa-heading{align-items:flex-start;flex-wrap:wrap}.oa-panel{padding:15px}}
 
 </style>
+<style>
+.oa-catalogo[open]{display:flex;flex-direction:column;width:calc(100% - 32px);max-width:1000px;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);padding:0;overflow:hidden;box-shadow:0 24px 70px #0f172a40}
+.oa-catalogo-header{padding:24px 24px 16px;flex-shrink:0;max-height:55vh;overflow-y:auto;border-bottom:1px solid #e2e8f0}
+.oa-catalogo-header .oa-heading{align-items:flex-start;margin-bottom:16px}.oa-catalogo-header p{margin:4px 0 0}.oa-catalogo-lista{margin-top:0;overflow:auto;max-height:420px;max-height:min(45vh,420px);min-height:90px;overscroll-behavior:contain}.oa-catalogo-lista .oa-table{table-layout:fixed}.oa-catalogo-lista th{position:sticky;top:0;z-index:1}.oa-catalogo-lista th:first-child{width:auto}.oa-catalogo-lista th:nth-child(2){width:135px}.oa-catalogo-lista th:last-child{width:115px}.oa-catalogo-lista td:first-child{overflow-wrap:anywhere}.oa-catalogo-lista th:first-child,.oa-catalogo-lista td:first-child{padding-left:24px}.oa-catalogo-lista th:last-child,.oa-catalogo-lista td:last-child{padding-right:24px;text-align:right}.oa-catalogo-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 24px;border-top:1px solid #e2e8f0;flex-shrink:0}.oa-catalogo-footer p{margin:0}.oa-catalogo-pagine{display:flex;align-items:center;gap:12px}.oa-catalogo-editor{margin-top:16px}.oa-catalogo-editor summary{font-size:14px;font-weight:600;cursor:pointer;color:#4338ca}.oa-catalogo-editor form{padding-top:12px}.oa-catalogo .oa-message{flex-shrink:0;margin:0;padding:12px 24px;border:0;border-top:1px solid #c7d2fe;border-radius:0}.oa-catalogo .oa-message.error{background:#fff7ed;border-color:#fed7aa;color:#9a3412}.oa-catalogo-riepilogo{margin:12px 0 16px!important}.oa-catalogo-azioni{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.oa-catalogo-azioni a{text-decoration:none}.oa-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:560px){.oa-catalogo-header{padding:18px 16px 14px}.oa-catalogo-lista th:first-child,.oa-catalogo-lista td:first-child{padding-left:16px}.oa-catalogo-lista th:last-child,.oa-catalogo-lista td:last-child{padding-right:16px}.oa-catalogo-lista th:nth-child(2){width:100px}.oa-catalogo-lista th:last-child{width:94px}.oa-catalogo-lista .oa-button{padding:8px 10px}.oa-catalogo-lista td,.oa-catalogo-lista th{padding:10px 6px}.oa-catalogo-footer{padding:12px 16px;gap:10px}.oa-catalogo-pagine{width:100%;justify-content:space-between;gap:8px}.oa-catalogo-header h2{font-size:21px}.oa-catalogo-header .oa-inline>input{min-width:0!important;flex-basis:100%}}
+
+</style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex min-h-screen">
 
@@ -451,9 +458,9 @@
   <details class="oa-panel" id="oa-config"><summary>Configurazione ordini: prodotti, accessi e notifiche</summary>
     <div class="oa-settings">
       <section><h3>Notifica e-mail</h3><p class="oa-muted">Ogni nuovo ordine viene notificato a questo indirizzo.</p><form id="oa-email-form"><label for="oa-email">E-mail Ufficio Acquisti</label><div class="oa-inline"><input id="oa-email" type="email" required maxlength="254" placeholder="Inserisci l’indirizzo destinatario"><button class="oa-primary" type="submit">Salva e-mail</button></div></form></section>
-      <section><h3>Elenco prodotti</h3><p class="oa-muted">Gestisci i prodotti qui oppure nella scheda ProdottiOrdini di Google Fogli. Per aggiungere una riga nel foglio compila nome e attivo (1 = disponibile, 0 = escluso); lascia vuoto id, che viene assegnato automaticamente. Le modifiche compaiono nel client al nuovo accesso o premendo “Aggiorna elenco prodotti”.</p><p><a id="oa-link-foglio" class="oa-button" target="_blank" rel="noopener noreferrer" hidden>Apri elenco in Google Fogli</a></p>
-        <form id="oa-prodotto-form"><input type="hidden" id="oa-prodotto-id"><label for="oa-prodotto-nome">Nome prodotto</label><div class="oa-inline"><input id="oa-prodotto-nome" required maxlength="200" placeholder="Nome completo del prodotto"><label class="oa-check"><input id="oa-prodotto-attivo" type="checkbox" checked> Attivo</label><button class="oa-primary" type="submit">Salva prodotto</button><button class="oa-button" type="button" id="oa-prodotto-annulla" hidden>Annulla modifica</button></div></form>
-        <div class="oa-table-wrap"><table class="oa-table"><thead><tr><th>Prodotto</th><th>Disponibilità</th><th></th></tr></thead><tbody id="oa-prodotti"></tbody></table></div>
+      <section><h3>Elenco prodotti</h3>
+        <p id="oa-prodotti-riepilogo" class="oa-muted oa-catalogo-riepilogo" role="status">Caricamento catalogo…</p>
+        <div class="oa-catalogo-azioni"><button id="oa-visualizza-prodotti" class="oa-primary" type="button" aria-haspopup="dialog" aria-controls="oa-catalogo">Visualizza prodotti</button><a id="oa-link-foglio" class="oa-button" target="_blank" rel="noopener noreferrer" hidden>Apri elenco in Google Fogli</a></div>
       </section>
       <section><h3>Accessi al client ordini</h3><p class="oa-muted">Crea un account da assegnare a ciascun richiedente. Il nome utente e la password consentono l’accesso alla sola richiesta prodotti.</p>
         <form id="oa-utente-form"><input type="hidden" id="oa-utente-id"><div class="oa-grid"><div><label for="oa-username">Nome utente</label><input id="oa-username" required minlength="3" maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9_-]{2,39}" autocomplete="off"></div><div><label for="oa-utente-nome">Nome operatore</label><input id="oa-utente-nome" required maxlength="200" autocomplete="off"></div><div><label for="oa-password">Password <span id="oa-password-help"></span></label><input id="oa-password" type="password" required minlength="8" maxlength="128" autocomplete="new-password"></div></div><div class="oa-inline" style="margin-top:14px"><label class="oa-check"><input id="oa-utente-attivo" type="checkbox" checked> Accesso attivo</label><button class="oa-primary" type="submit">Salva accesso</button><button class="oa-button" type="button" id="oa-utente-annulla" hidden>Annulla modifica</button></div></form>
@@ -464,6 +471,23 @@
 </section>
 
 </main>
+<dialog id="oa-catalogo" class="oa-dialog oa-page oa-catalogo" aria-labelledby="oa-catalogo-titolo" aria-describedby="oa-catalogo-info">
+  <div class="oa-catalogo-header">
+    <div class="oa-heading"><div><h2 id="oa-catalogo-titolo">Catalogo prodotti</h2><p id="oa-catalogo-info" class="oa-muted">Consulta i prodotti o modifica la loro disponibilità.</p></div><button type="button" class="oa-button" id="oa-catalogo-chiudi" aria-label="Chiudi catalogo prodotti">Chiudi</button></div>
+    <label for="oa-catalogo-cerca">Cerca un prodotto</label>
+    <input id="oa-catalogo-cerca" type="search" placeholder="Scrivi il nome del prodotto…" autocomplete="off">
+    <details id="oa-prodotto-editor" class="oa-catalogo-editor"><summary id="oa-prodotto-editor-titolo">Aggiungi prodotto</summary>
+      <form id="oa-prodotto-form"><input type="hidden" id="oa-prodotto-id"><label for="oa-prodotto-nome">Nome prodotto</label><div class="oa-inline"><input id="oa-prodotto-nome" required maxlength="200" placeholder="Nome completo del prodotto"><label class="oa-check"><input id="oa-prodotto-attivo" type="checkbox" checked> Attivo</label><button class="oa-primary" type="submit">Salva prodotto</button><button class="oa-button" type="button" id="oa-prodotto-annulla" hidden>Annulla modifica</button></div></form>
+    </details>
+  </div>
+  <div class="oa-catalogo-lista oa-table-wrap"><table class="oa-table"><thead><tr><th scope="col">Prodotto</th><th scope="col">Disponibilità</th><th scope="col"><span class="oa-sr-only">Azioni</span></th></tr></thead><tbody id="oa-prodotti"></tbody></table></div>
+  <div class="oa-catalogo-footer">
+    <p id="oa-catalogo-risultati" class="oa-muted" role="status" aria-live="polite" aria-atomic="true"></p>
+    <nav class="oa-catalogo-pagine" aria-label="Pagine del catalogo prodotti"><button id="oa-catalogo-precedente" class="oa-button" type="button">Precedente</button><span id="oa-catalogo-pagina" class="oa-muted"></span><button id="oa-catalogo-successiva" class="oa-button" type="button">Successiva</button></nav>
+  </div>
+  <p id="oa-catalogo-message" class="oa-message" role="status" hidden></p>
+</dialog>
+
 <dialog id="oa-dettaglio" class="oa-dialog" aria-labelledby="oa-dettaglio-titolo"><div class="oa-heading"><h2 id="oa-dettaglio-titolo">Dettaglio ordine</h2><button type="button" class="oa-button" id="oa-chiudi" aria-label="Chiudi dettaglio ordine">Chiudi</button></div><div id="oa-dettaglio-body"></div><div id="oa-dettaglio-message" class="oa-message" role="status" hidden></div></dialog>
 
 
@@ -699,6 +723,7 @@
                     chiudiDettaglioTicket();
                     chiudiPasswordSA(true);
                     if (document.getElementById('oa-dettaglio').open) document.getElementById('oa-dettaglio').close();
+                    if (document.getElementById('oa-catalogo').open) document.getElementById('oa-catalogo').close();
                     document.getElementById('accesso-amministratore').classList.remove('hidden');
                 }
                 throw error;
@@ -1565,7 +1590,7 @@ async function confermaCambioStato(e) {
 let oaDati = {ordini:[],prodotti:[],utenti:[],email:''};
 let oaCaricamento = false, oaEmailCaricata = false, oaOrdineAperto = '';
 const oaEl = id => document.getElementById(id);
-function oaMessaggio(testo,errore=false){oaEl('oa-message').textContent=testo;oaEl('oa-message').hidden=!testo;oaEl('oa-message').classList.toggle('error',errore);}
+function oaMessaggio(testo,errore=false){oaEl('oa-message').textContent=testo;oaEl('oa-message').hidden=!testo;oaEl('oa-message').classList.toggle('error',errore);if(oaEl('oa-catalogo').open){const box=oaEl('oa-catalogo-message');box.textContent=testo;box.hidden=!testo;box.classList.toggle('error',errore);}}
 async function caricaAcquisti(silenzioso=false){
   if(oaCaricamento || !adminToken)return;
   oaCaricamento=true;oaEl('oa-aggiorna').disabled=true;
@@ -1586,7 +1611,7 @@ function oaRenderOrdini(){
   if(oaEl('oa-dettaglio').open)oaMostraDettaglio();
 }
 function oaRenderConfigurazione(){
-  oaEl('oa-prodotti').innerHTML=oaDati.prodotti.length?oaDati.prodotti.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+ (p.attivo?'Attivo':'Disattivato')+'</td><td><button type="button" class="oa-button" data-oa-prodotto="'+esc(p.id)+'">Modifica</button></td></tr>').join(''):'<tr><td colspan="3" class="oa-muted">Aggiungi i prodotti da mostrare nel menù a tendina.</td></tr>';
+  oaRenderCatalogo();
   oaEl('oa-utenti').innerHTML=oaDati.utenti.length?oaDati.utenti.map(u=>'<tr><td>'+esc(u.id)+'</td><td>'+esc(u.nome)+'</td><td>'+ (u.attivo?'Attivo':'Disattivato')+'</td><td><button type="button" class="oa-button" data-oa-utente="'+esc(u.id)+'">Modifica / password</button></td></tr>').join(''):'<tr><td colspan="4" class="oa-muted">Crea le credenziali da assegnare ai richiedenti.</td></tr>';
 }
 function oaMostraDettaglio(){
@@ -1595,7 +1620,7 @@ function oaMostraDettaglio(){
   const ricevuto=new Date(o.creatoIl).toLocaleString('it-IT',{timeZone:'Europe/Rome'});
   oaEl('oa-dettaglio-body').innerHTML='<p class="oa-wrap"><strong>Data:</strong> '+esc(formattaData(o.data))+'<br><strong>Nome operatore:</strong> '+esc(o.operatore)+'<br><strong>Sede:</strong> '+esc(o.sede)+'<br><strong>Account richiedente:</strong> '+esc(o.utenteId)+'<br><strong>Ricevuto il:</strong> '+esc(ricevuto)+'</p><div class="oa-table-wrap"><table class="oa-table"><thead><tr><th>Prodotto</th><th>Quantità</th></tr></thead><tbody>'+o.prodotti.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+p.quantita+'</td></tr>').join('')+'</tbody></table></div><h3>Note aggiuntive</h3><p class="oa-wrap">'+esc(o.note||'Nessuna')+'</p><h3>Notifica e-mail</h3><p class="oa-wrap">'+esc(o.notifica)+' — '+esc(o.notificaA)+(o.notificaIl?'<br>'+esc(new Date(o.notificaIl).toLocaleString('it-IT',{timeZone:'Europe/Rome'})):'')+'</p>'+(o.notifica==='Da verificare'?'<p class="oa-muted">L’invio ha esito incerto: verificare la ricezione nella casella destinataria.</p>':'')+(['Da inviare','Non inviata'].includes(o.notifica)?'<button type="button" class="oa-primary" data-oa-notifica="'+esc(o.id)+'">Riprova notifica e-mail</button>':'');
 }
-function oaResetProdotto(){oaEl('oa-prodotto-form').reset();oaEl('oa-prodotto-id').value='';oaEl('oa-prodotto-annulla').hidden=true;}
+function oaResetProdotto(){oaEl('oa-prodotto-form').reset();oaEl('oa-prodotto-id').value='';oaEl('oa-prodotto-annulla').hidden=true;oaEl('oa-prodotto-editor').open=false;oaEl('oa-prodotto-editor-titolo').textContent='Aggiungi prodotto';if(oaEl('oa-catalogo').open)oaEl('oa-catalogo-cerca').focus();}
 function oaResetUtente(){oaEl('oa-utente-form').reset();oaEl('oa-utente-id').value='';oaEl('oa-username').disabled=false;oaEl('oa-password').required=true;oaEl('oa-password-help').textContent='';oaEl('oa-utente-annulla').hidden=true;nascondiPassword(oaEl('oa-utente-form'));}
 async function oaSalva(form,azione){const buttons=Array.from(form.querySelectorAll('button'));buttons.forEach(b=>b.disabled=true);try{await azione();await caricaAcquisti(true);oaMessaggio('Configurazione salvata.');}catch(err){oaMessaggio(err.message,true);}finally{buttons.forEach(b=>b.disabled=false);}}
 oaEl('oa-aggiorna').addEventListener('click',()=>caricaAcquisti());
@@ -1608,11 +1633,58 @@ oaEl('oa-utente-form').addEventListener('submit',e=>{e.preventDefault();oaSalva(
 oaEl('vista-acquisti').addEventListener('click',e=>{
   const btn=e.target.closest('button');if(!btn)return;
   if(btn.dataset.oaOrdine){oaOrdineAperto=btn.dataset.oaOrdine;oaMostraDettaglio();oaEl('oa-dettaglio-message').hidden=true;oaEl('oa-dettaglio').showModal();}
-  if(btn.dataset.oaProdotto){const p=oaDati.prodotti.find(x=>x.id===btn.dataset.oaProdotto);if(!p)return;oaEl('oa-prodotto-id').value=p.id;oaEl('oa-prodotto-nome').value=p.nome;oaEl('oa-prodotto-attivo').checked=p.attivo;oaEl('oa-prodotto-annulla').hidden=false;oaEl('oa-prodotto-nome').focus();}
   if(btn.dataset.oaUtente){const u=oaDati.utenti.find(x=>x.id===btn.dataset.oaUtente);if(!u)return;oaEl('oa-utente-id').value=u.id;oaEl('oa-username').value=u.id;oaEl('oa-username').disabled=true;oaEl('oa-utente-nome').value=u.nome;oaEl('oa-password').value='';oaEl('oa-password').required=false;oaEl('oa-password-help').textContent='(lascia vuota per mantenerla)';oaEl('oa-utente-attivo').checked=u.attivo;oaEl('oa-utente-annulla').hidden=false;oaEl('oa-utente-nome').focus();}
 });
 oaEl('oa-chiudi').addEventListener('click',()=>oaEl('oa-dettaglio').close());
 oaEl('oa-dettaglio').addEventListener('click',async e=>{const btn=e.target.closest('[data-oa-notifica]');if(!btn)return;btn.disabled=true;try{const r=await apiCall('POST','/api/admin/acquisti/ordini/'+encodeURIComponent(btn.dataset.oaNotifica)+'/notifica');await caricaAcquisti(true);oaEl('oa-dettaglio-message').textContent=r.emailSent?'Notifica inviata.':'Notifica non confermata: controllare lo stato visualizzato.';oaEl('oa-dettaglio-message').hidden=false;}catch(err){oaEl('oa-dettaglio-message').textContent=err.message;oaEl('oa-dettaglio-message').hidden=false;}finally{btn.disabled=false;}});
+
+const OA_PRODOTTI_PER_PAGINA=15;
+let oaCatalogoPagina=1,oaCatalogoOverflow='';
+function oaRenderCatalogo(){
+  const prodotti=oaDati.prodotti;
+  const attivi=prodotti.filter(p=>p.attivo).length;
+  oaEl('oa-prodotti-riepilogo').textContent=prodotti.length===1?'1 prodotto in catalogo · '+attivi+' attivo':prodotti.length+' prodotti in catalogo · '+attivi+' attivi';
+  // L'elenco non viene creato nella pagina del gestionale né mentre la finestra è chiusa.
+  if(!oaEl('oa-catalogo').open){oaEl('oa-prodotti').replaceChildren();return;}
+  const q=oaEl('oa-catalogo-cerca').value.trim().toLocaleLowerCase('it');
+  const filtrati=prodotti.filter(p=>[p.nome,p.id].join(' ').toLocaleLowerCase('it').includes(q));
+  const pagine=Math.max(1,Math.ceil(filtrati.length/OA_PRODOTTI_PER_PAGINA));
+  oaCatalogoPagina=Math.min(Math.max(1,oaCatalogoPagina),pagine);
+  const inizio=(oaCatalogoPagina-1)*OA_PRODOTTI_PER_PAGINA;
+  const visibili=filtrati.slice(inizio,inizio+OA_PRODOTTI_PER_PAGINA);
+  oaEl('oa-prodotti').innerHTML=visibili.length?visibili.map(p=>'<tr><td>'+esc(p.nome)+'</td><td><span class="oa-pill '+(p.attivo?'ok':'')+'">'+(p.attivo?'Attivo':'Disattivato')+'</span></td><td><button type="button" class="oa-button" data-oa-prodotto="'+esc(p.id)+'">Modifica</button></td></tr>').join(''):'<tr><td colspan="3" class="oa-muted">'+(q?'Nessun prodotto corrisponde alla ricerca.':'Nessun prodotto presente. Puoi aggiungerlo qui o in Google Fogli.')+'</td></tr>';
+  oaEl('oa-catalogo-risultati').textContent=filtrati.length?(inizio+1)+'–'+(inizio+visibili.length)+' di '+filtrati.length+' prodotti'+(q?' trovati':''):'0 prodotti'+(q?' trovati':'');
+  oaEl('oa-catalogo-pagina').textContent='Pagina '+oaCatalogoPagina+' di '+pagine;
+  oaEl('oa-catalogo-precedente').disabled=oaCatalogoPagina===1;
+  oaEl('oa-catalogo-successiva').disabled=oaCatalogoPagina===pagine;
+}
+function oaApriCatalogo(){
+  const dialog=oaEl('oa-catalogo');
+  if(!dialog.open){
+    oaCatalogoPagina=1;oaEl('oa-catalogo-cerca').value='';
+    oaEl('oa-catalogo-message').hidden=true;
+    oaCatalogoOverflow=document.body.style.overflow;
+    dialog.showModal();document.body.style.overflow='hidden';
+  }
+  oaRenderCatalogo();oaEl('oa-catalogo-cerca').focus();
+}
+function oaModificaProdotto(id){
+  const p=oaDati.prodotti.find(x=>x.id===id);if(!p)return;
+  oaEl('oa-prodotto-id').value=p.id;oaEl('oa-prodotto-nome').value=p.nome;
+  oaEl('oa-prodotto-attivo').checked=p.attivo;oaEl('oa-prodotto-annulla').hidden=false;
+  oaEl('oa-prodotto-editor-titolo').textContent='Modifica prodotto';
+  oaEl('oa-prodotto-editor').open=true;oaEl('oa-prodotto-nome').focus();
+}
+oaEl('oa-visualizza-prodotti').addEventListener('click',oaApriCatalogo);
+oaEl('oa-catalogo-chiudi').addEventListener('click',()=>oaEl('oa-catalogo').close());
+oaEl('oa-catalogo').addEventListener('close',()=>{
+  document.body.style.overflow=oaCatalogoOverflow;oaResetProdotto();oaRenderCatalogo();
+  if(document.getElementById('accesso-amministratore').classList.contains('hidden'))oaEl('oa-visualizza-prodotti').focus({preventScroll:true});
+});
+oaEl('oa-catalogo-cerca').addEventListener('input',()=>{oaCatalogoPagina=1;oaRenderCatalogo();});
+oaEl('oa-catalogo-precedente').addEventListener('click',()=>{oaCatalogoPagina--;oaRenderCatalogo();oaEl('oa-catalogo').querySelector('.oa-catalogo-lista').scrollTop=0;});
+oaEl('oa-catalogo-successiva').addEventListener('click',()=>{oaCatalogoPagina++;oaRenderCatalogo();oaEl('oa-catalogo').querySelector('.oa-catalogo-lista').scrollTop=0;});
+oaEl('oa-catalogo').addEventListener('click',e=>{const btn=e.target.closest('[data-oa-prodotto]');if(btn)oaModificaProdotto(btn.dataset.oaProdotto);});
 
 </script>
 </body>
