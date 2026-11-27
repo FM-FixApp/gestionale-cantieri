@@ -4,7 +4,7 @@
  * - Android (Chrome, Edge, Samsung Internet): pulsante "Installa" che apre la conferma di sistema.
  * - iPhone/iPad: istruzioni per "Aggiungi alla schermata Home" (Safari non consente l'installazione da sito).
  * - Nessun avviso su computer, se l'app è già aperta dall'icona o se l'utente ha scelto "Non ora" negli ultimi 30 giorni.
- * La pagina chiama window.fmInvitoInstallazione() dopo l'accesso e window.fmNascondiInvito() all'uscita.
+ * L'avviso compare all'apertura della pagina, già sulla schermata di accesso, e resta finché l'utente non lo chiude.
  * Uso nella pagina: <script src="./installa-app.js" data-nome-app="FMFixApp Ordini" defer></script>
  */
 (function () {
@@ -14,7 +14,6 @@
   var NOME_APP = (script && script.getAttribute('data-nome-app')) || 'FMFixApp';
   var CHIAVE_RINVIO = 'fmfix_invito_installazione_' + location.pathname.split('/').pop().toLowerCase();
   var GIORNI_RINVIO = 30;
-  var ATTESA_ANDROID_MS = 4000;
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
@@ -30,7 +29,7 @@
 
   var richiestaInstallazione = null;
   var banner = null;
-  var attesaAndroid = null;
+  var invitoAttivo = false;
 
   function giaApertaComeApp() {
     return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
@@ -45,7 +44,8 @@
   window.addEventListener('beforeinstallprompt', function (event) {
     event.preventDefault();
     richiestaInstallazione = event;
-    if (attesaAndroid) { clearTimeout(attesaAndroid); attesaAndroid = null; mostra('android'); }
+    // Chrome può segnalare l'installabilità qualche istante dopo l'apertura della pagina.
+    if (invitoAttivo) mostra('android');
   });
   window.addEventListener('appinstalled', function () { richiestaInstallazione = null; nascondi(); });
 
@@ -112,21 +112,23 @@
   }
 
   function nascondi() {
-    if (attesaAndroid) { clearTimeout(attesaAndroid); attesaAndroid = null; }
     if (!banner) return;
     banner.remove();
     banner = null;
     document.body.style.paddingBottom = '';
   }
 
-  window.fmInvitoInstallazione = function () {
+  function avvia() {
     if (giaApertaComeApp() || rinviata()) return;
     if (isIOS) { mostra(isIOSBrowserInterno ? 'ios-interno' : 'ios'); return; }
     if (!isAndroid) return; // computer: nessun avviso
-    if (richiestaInstallazione) { mostra('android'); return; }
-    // Chrome può segnalare l'installabilità qualche istante dopo il caricamento.
-    // Se non la segnala (app già installata o browser non compatibile) non compare nulla.
-    if (!attesaAndroid) attesaAndroid = setTimeout(function () { attesaAndroid = null; }, ATTESA_ANDROID_MS);
-  };
-  window.fmNascondiInvito = nascondi;
+    // Android: l'avviso compare quando Chrome conferma che l'app è installabile.
+    // Se non lo conferma (app già installata o browser non compatibile) non compare nulla.
+    invitoAttivo = true;
+    if (richiestaInstallazione) mostra('android');
+  }
+
+  // Lo script è caricato con "defer": la pagina è già pronta.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avvia);
+  else avvia();
 })();
