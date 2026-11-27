@@ -21,6 +21,10 @@
         .password-field > input::-ms-reveal { display: none; }
     </style>
     <link rel="manifest" href="./manifest-icone.json">
+    <meta name="theme-color" content="#1e40af">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="FMFix Segnalaz.">
 <link rel="apple-touch-icon" sizes="180x180" href="./icona-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icona-192.png">
     <!-- Finestra di comunicazione FMFixApp (comune a conferme, errori e avvisi). -->
@@ -340,6 +344,7 @@
                 if (saToken && cantiereLoggato) {
                     document.getElementById('schermata-login').classList.add('hidden');
                     document.getElementById('area-operativa').classList.remove('hidden');
+                    window.fmInvitoInstallazione?.();
                 }
             });
             setInterval(() => { if (saToken) caricaSegnalazioniSA(true); }, 30000);
@@ -390,11 +395,13 @@
                 document.getElementById('schermata-login').classList.add('hidden');
                 document.getElementById('area-operativa').classList.remove('hidden');
                 document.getElementById('input-mese').value = new Date().toISOString().slice(0,7);
+                window.fmInvitoInstallazione?.();
                 await caricaSegnalazioniSA();
             } catch(err) { avvisoFM(err.message || 'Accesso non riuscito.', 'errore', 'Accesso non riuscito'); }
         }
 
         function esci() {
+            window.fmNascondiInvito?.();
             nascondiPassword();
             cantiereLoggato = null;
             ticketsSA = [];
@@ -682,5 +689,6 @@
         window.addEventListener('pageshow', () => nascondiPassword());
         inizializzaOcchiettiPassword();
     </script>
+    <script src="./installa-app.js" data-nome-app="FMFixApp Segnalazioni" defer></script>
 </body>
 </html>

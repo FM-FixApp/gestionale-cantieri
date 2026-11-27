@@ -1,0 +1,16 @@
+{
+  "id": "./Ordini.html",
+  "name": "FMFixApp - Ordini",
+  "short_name": "FMFix Ordini",
+  "description": "Richiesta prodotti all'Ufficio Acquisti.",
+  "lang": "it",
+  "start_url": "./Ordini.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    { "src": "./icona-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
