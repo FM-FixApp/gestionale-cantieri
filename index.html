@@ -344,7 +344,6 @@
                 if (saToken && cantiereLoggato) {
                     document.getElementById('schermata-login').classList.add('hidden');
                     document.getElementById('area-operativa').classList.remove('hidden');
-                    window.fmInvitoInstallazione?.();
                 }
             });
             setInterval(() => { if (saToken) caricaSegnalazioniSA(true); }, 30000);
@@ -395,13 +394,11 @@
                 document.getElementById('schermata-login').classList.add('hidden');
                 document.getElementById('area-operativa').classList.remove('hidden');
                 document.getElementById('input-mese').value = new Date().toISOString().slice(0,7);
-                window.fmInvitoInstallazione?.();
                 await caricaSegnalazioniSA();
             } catch(err) { avvisoFM(err.message || 'Accesso non riuscito.', 'errore', 'Accesso non riuscito'); }
         }
 
         function esci() {
-            window.fmNascondiInvito?.();
             nascondiPassword();
             cantiereLoggato = null;
             ticketsSA = [];
